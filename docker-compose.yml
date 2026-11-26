@@ -1,0 +1,27 @@
+services:
+  miele-local:
+    image: miele-local:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: miele-local
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      # Host port mapped above (used for mDNS advertisement)
+      - EXTERNAL_PORT=5001
+      # Auto-purge history records older than X days (default 30)
+      - PURGE_DAYS=30
+      # Display name in the Web UI
+      - HOME_NAME=Miele Local Server
+      # Optional: space-separated Bearer API keys
+      # - MIELE_API_KEYS=my-secret-key
+      # Optional: path to legacy MieleRESTServer YAML config inside /data to import at startup
+      # - MIELE_CONFIG=/data/MieleRESTServer.config
+    volumes:
+      - miele-data:/data
+
+volumes:
+  miele-data:
+    name: miele-local-data

@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "miele-local"
+version = "1.0.0"
+description = "Miele Local - Encrypted local REST API and Web UI for Miele@home appliances"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+  "fastapi>=0.100.0",
+  "uvicorn[standard]>=0.23.0",
+  "cryptography>=41.0.0",
+  "zeroconf>=0.115.0",
+  "aiohttp>=3.9.0",
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+miele-local = "miele_local.__main__:main"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["miele_local"]
+
+[tool.setuptools.package-data]
+miele_local = ["static/*"]
+
+[tool.pytest.ini_options]
+markers = [
+  "asyncio: marks tests as async",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "W", "F"]

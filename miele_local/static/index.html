@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miele Local</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <style>
+        :root {
+            --bg-primary: #f5f6f8;
+            --bg-card: #ffffff;
+            --bg-modal: #ffffff;
+            --bg-disabled: #e2e5ea;
+            --bg-error: #ffebee;
+            --bg-success: #e8f5e9;
+            --bg-warning: #fff8e1;
+            --bg-accent-subtle: #fff0f2;
+            --text-primary: #1f2430;
+            --text-secondary: #5a6272;
+            --text-muted: #8a93a6;
+            --text-on-accent: #ffffff;
+            --text-error: #c62828;
+            --text-success: #2e7d32;
+            --text-warning: #e65100;
+            --accent: #cc002b;
+            --accent-hover: #a80023;
+            --accent-pending: #ff7b2e;
+            --border-color: #dce0e6;
+            --border-light: #e8ebf0;
+            --card-off-bg: #e4e7ec;
+            --card-off-text: #4a5260;
+            --card-running-start: #ff7b2e;
+            --card-running-end: #e65100;
+            --card-ready-start: #2196f3;
+            --card-ready-end: #1565c0;
+            --card-done-start: #43a047;
+            --card-done-end: #2e7d32;
+            --card-error-start: #e53935;
+            --card-error-end: #b71c1c;
+            --card-standby-start: #607d8b;
+            --card-standby-end: #455a64;
+            --btn-secondary-bg: #e9ecf1;
+            --btn-secondary-bg-hover: #dce1e8;
+            --btn-secondary-text: #2c3442;
+            --modal-overlay: rgba(12, 16, 24, 0.55);
+            --surface-shadow: 0 14px 34px rgba(24, 39, 75, 0.08);
+            --surface-shadow-hover: 0 18px 42px rgba(24, 39, 75, 0.14);
+            --focus-ring: 0 0 0 3px rgba(204, 0, 43, 0.22);
+            --chart-temp: #2196F3;
+            --chart-target: #cc002b;
+            --chart-progress: #4CAF50;
+            --chart-grid: rgba(0, 0, 0, 0.09);
+            --chart-text: #666;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #14161b;
+            --bg-card: #1f232b;
+            --bg-modal: #242933;
+            --bg-disabled: #2e3440;
+            --bg-error: #3b1719;
+            --bg-success: #16301b;
+            --bg-warning: #382a10;
+            --bg-accent-subtle: #361820;
+            --text-primary: #eef1f6;
+            --text-secondary: #aab2c0;
+            --text-muted: #7b8494;
+            --text-error: #ef9a9a;
+            --text-success: #81c784;
+            --text-warning: #ffb74d;
+            --accent: #e52047;
+            --accent-hover: #ff3b60;
+            --border-color: #343b48;
+            --border-light: #2d333f;
+            --card-off-bg: #272c36;
+            --card-off-text: #9aa3b2;
+            --btn-secondary-bg: #303744;
+            --btn-secondary-bg-hover: #3d4555;
+            --btn-secondary-text: #dce1eb;
+            --modal-overlay: rgba(0, 0, 0, 0.72);
+            --surface-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+            --surface-shadow-hover: 0 18px 42px rgba(0, 0, 0, 0.45);
+            --chart-grid: rgba(255, 255, 255, 0.1);
+            --chart-text: #aab2c0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]) {
+                --bg-primary: #14161b;
+                --bg-card: #1f232b;
+                --bg-modal: #242933;
+                --bg-disabled: #2e3440;
+                --bg-error: #3b1719;
+                --bg-success: #16301b;
+                --bg-warning: #382a10;
+                --bg-accent-subtle: #361820;
+                --text-primary: #eef1f6;
+                --text-secondary: #aab2c0;
+                --text-muted: #7b8494;
+                --text-error: #ef9a9a;
+                --text-success: #81c784;
+                --text-warning: #ffb74d;
+                --accent: #e52047;
+                --accent-hover: #ff3b60;
+                --border-color: #343b48;
+                --border-light: #2d333f;
+                --card-off-bg: #272c36;
+                --card-off-text: #9aa3b2;
+                --btn-secondary-bg: #303744;
+                --btn-secondary-bg-hover: #3d4555;
+                --btn-secondary-text: #dce1eb;
+                --modal-overlay: rgba(0, 0, 0, 0.72);
+                --surface-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+                --surface-shadow-hover: 0 18px 42px rgba(0, 0, 0, 0.45);
+                --chart-grid: rgba(255, 255, 255, 0.1);
+                --chart-text: #aab2c0;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background:
+                radial-gradient(circle at 10% -10%, rgba(204, 0, 43, 0.09), transparent 34rem),
+                var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: clamp(14px, 3vw, 28px);
+        }
+
+        .container { max-width: 1260px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+            border: 1px solid var(--border-light);
+            border-radius: 18px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--surface-shadow);
+            flex-wrap: wrap;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .brand-badge {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: var(--accent); color: #fff;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 18px; flex-shrink: 0;
+        }
+        .header-left h1 {
+            font-size: clamp(20px, 2.5vw, 26px);
+            font-weight: 650;
+            letter-spacing: -0.025em;
+            cursor: pointer;
+            border-bottom: 1px dashed transparent;
+            transition: border-color 0.2s;
+        }
+        .header-left h1:hover { border-bottom-color: var(--accent); }
+
+        .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            min-height: 40px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background: var(--accent); color: var(--text-on-accent); }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+        .btn-secondary:hover { background: var(--btn-secondary-bg-hover); }
+        .btn-danger { background: #d32f2f; color: #fff; }
+        .btn-sm { min-height: 32px; padding: 5px 10px; font-size: 12px; border-radius: 8px; }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 40px; height: 40px;
+            cursor: pointer;
+            font-size: 17px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .theme-toggle:hover { border-color: var(--accent); }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(3, auto) 1fr;
+            gap: 10px;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            box-shadow: var(--surface-shadow);
+        }
+        .status-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 11px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+            font-size: 13px; color: var(--text-secondary);
+        }
+        .status-value { font-weight: 650; color: var(--text-primary); }
+        .status-actions {
+            display: flex; justify-content: flex-end; gap: 8px;
+            background: transparent; padding: 0;
+        }
+
+        .sse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #999; display: inline-block;
+        }
+        .sse-dot.connected { background: #4caf50; box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); }
+
+        .banner {
+            padding: 13px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 13.5px;
+            display: none;
+        }
+        .banner.error { background: var(--bg-error); color: var(--text-error); display: block; }
+        .banner.success { background: var(--bg-success); color: var(--text-success); display: block; }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .device-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 192px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: var(--surface-shadow);
+            position: relative;
+        }
+        .device-card:hover { transform: translateY(-4px); box-shadow: var(--surface-shadow-hover); }
+
+        .device-card.state-running {
+            background: linear-gradient(135deg, var(--card-running-start), var(--card-running-end));
+            color: #fff;
+        }
+        .device-card.state-ready {
+            background: linear-gradient(135deg, var(--card-ready-start), var(--card-ready-end));
+            color: #fff;
+        }
+        .device-card.state-done {
+            background: linear-gradient(135deg, var(--card-done-start), var(--card-done-end));
+            color: #fff;
+        }
+        .device-card.state-error {
+            background: linear-gradient(135deg, var(--card-error-start), var(--card-error-end));
+            color: #fff;
+        }
+        .device-card.state-standby {
+            background: linear-gradient(135deg, var(--card-standby-start), var(--card-standby-end));
+            color: #fff;
+        }
+        .device-card.state-off {
+            background: var(--card-off-bg);
+            color: var(--card-off-text);
+            border-color: var(--border-color);
+        }
+
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .card-icon { font-size: 28px; line-height: 1; }
+        .card-badges { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+        .badge-pill {
+            font-size: 11px; font-weight: 650;
+            padding: 3px 8px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(4px);
+        }
+        .state-off .badge-pill { background: rgba(0, 0, 0, 0.08); }
+
+        .card-main { margin: 12px 0; }
+        .card-status { font-size: 21px; font-weight: 650; letter-spacing: -0.02em; }
+        .card-program { font-size: 13px; opacity: 0.92; margin-top: 3px; }
+        .card-metrics { font-size: 12.5px; opacity: 0.88; margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .progress-track {
+            width: 100%; height: 6px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
+            overflow: hidden; margin: 8px 0 6px;
+        }
+        .state-off .progress-track { background: rgba(0, 0, 0, 0.12); }
+        .progress-fill {
+            height: 100%; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            transition: width 0.35s ease;
+        }
+        .state-off .progress-fill { background: var(--accent); }
+
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            font-size: 12px; opacity: 0.9; gap: 8px;
+        }
+        .card-name { font-size: 14px; font-weight: 650; }
+        .card-sub { font-size: 11.5px; opacity: 0.8; }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: 18px;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .empty-state h2 { margin-bottom: 8px; font-size: 20px; }
+        .empty-state p { color: var(--text-secondary); margin-bottom: 18px; max-width: 560px; margin-inline: auto; }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed; inset: 0; z-index: 1000;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(5px);
+            align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .modal.open { display: flex; }
+        .modal-content {
+            background: var(--bg-modal);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            max-width: 760px; width: 100%;
+            max-height: 92vh; overflow-y: auto;
+            padding: 20px 22px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px; margin-bottom: 14px;
+        }
+        .modal-title-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-close {
+            width: 34px; height: 34px; border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary); color: var(--text-primary);
+            cursor: pointer; font-size: 16px;
+        }
+
+        .tabs {
+            display: flex; gap: 4px;
+            padding: 4px; border-radius: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1; min-width: 90px;
+            padding: 9px 10px;
+            border: none; border-radius: 8px;
+            background: transparent; color: var(--text-secondary);
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .tab-btn.active {
+            background: var(--bg-card); color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px; margin-bottom: 16px;
+        }
+        .info-box {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+        .info-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+        .info-val { font-size: 15px; font-weight: 650; margin-top: 3px; overflow-wrap: break-word; }
+
+        .controls-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label {
+            display: block; font-size: 12.5px; font-weight: 650;
+            color: var(--text-secondary); margin-bottom: 5px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 8px 11px;
+            font-size: 13.5px;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent); box-shadow: var(--focus-ring);
+        }
+
+        .hint-box {
+            background: var(--bg-warning);
+            color: var(--text-warning);
+            border: 1px solid color-mix(in srgb, var(--text-warning) 30%, transparent);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            line-height: 1.45;
+            margin-top: 10px;
+        }
+
+        .feedback-box {
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 12px;
+            display: none;
+        }
+        .feedback-box.info {
+            display: block;
+            background: color-mix(in srgb, var(--accent) 8%, var(--bg-primary));
+            border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+            color: var(--text-primary);
+        }
+        .feedback-box.error {
+            display: block;
+            background: var(--bg-error);
+            border: 1px solid color-mix(in srgb, var(--text-error) 35%, transparent);
+            color: var(--text-error);
+        }
+        .feedback-box.success {
+            display: block;
+            background: var(--bg-success);
+            border: 1px solid color-mix(in srgb, var(--text-success) 35%, transparent);
+            color: var(--text-success);
+        }
+        .feedback-box ul, .feedback-box ol {
+            margin: 6px 0 0 18px;
+        }
+        .feedback-box details {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .success-hero {
+            text-align: center;
+            padding: 6px 4px 12px;
+        }
+        .success-icon {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--bg-success);
+            color: var(--text-success);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        pre.json-view {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+            max-height: 320px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chart-container { position: relative; height: 280px; }
+
+        .footer {
+            text-align: center;
+            padding: 24px 12px 10px;
+            border-top: 1px solid var(--border-light);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; margin: 0 10px; }
+        .footer a:hover { color: var(--accent); }
+
+        @media (max-width: 860px) {
+            .status-bar { grid-template-columns: repeat(2, 1fr); }
+            .status-actions { grid-column: 1 / -1; justify-content: stretch; }
+            .status-actions .btn { flex: 1; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="brand-badge">M</div>
+                <div>
+                    <h1 id="home-name" title="Click to rename">Miele Local Server</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" id="btn-global-stats">📊 Statistics</button>
+                <button class="btn btn-primary" id="btn-add-appliance">+ Add Appliance</button>
+                <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">🌙</button>
+            </div>
+        </div>
+
+        <div class="status-bar" id="status-bar">
+            <div class="status-item">
+                Appliances: <span class="status-value" id="device-count">0</span>
+            </div>
+            <div class="status-item">
+                <span class="sse-dot" id="sse-dot"></span>
+                <span class="status-value" id="sse-status">Connecting…</span>
+            </div>
+            <div class="status-item">
+                Updated: <span class="status-value" id="last-update">—</span>
+            </div>
+            <div class="status-item status-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-refresh-all">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div id="global-banner" class="banner"></div>
+
+        <div class="devices-grid" id="devices-grid">
+            <div class="empty-state">
+                <h2>Loading appliances…</h2>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>
+                <a href="/api">API Info</a>
+                <a href="/docs">Swagger / OpenAPI</a>
+                <a href="/devices">Devices JSON</a>
+                <a href="/generate-summary">Legacy Summary</a>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px;">
+                Miele Local Server <span id="version-number"></span> · 100% Local Encrypted LAN Control
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Setup Appliance Modal -->
+    <div class="modal" id="add-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <h2 class="modal-title">Add Miele Appliance</h2>
+                </div>
+                <button class="modal-close" onclick="closeAddModal()">✕</button>
+            </div>
+            <p style="font-size:13px; color:var(--text-secondary); margin:-6px 0 12px;">
+                Choose <strong>one</strong> of the methods below to connect an appliance:
+            </p>
+
+            <div class="tabs" id="add-tabs">
+                <button class="tab-btn active" data-addtab="commission">Pair New on LAN</button>
+                <button class="tab-btn" data-addtab="existing">Connect with Keys</button>
+                <button class="tab-btn" data-addtab="wifi">Wi-Fi Setup (SoftAP)</button>
+                <button class="tab-btn" data-addtab="yaml">Import YAML</button>
+            </div>
+
+            <!-- Method 1: Pair New on LAN -->
+            <div class="add-tab-pane" id="addtab-commission">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+                    For an appliance already on your Wi-Fi that has not been paired locally yet. Generates keys, pairs with the appliance, and adds it automatically.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Appliance IP Address</label>
+                        <input id="comm-host" type="text" placeholder="192.168.1.50">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint ID (slug, e.g. washer, oven)</label>
+                        <input id="comm-endpoint" type="text" placeholder="washer">
+                    </div>
+                    <div class="form-group full">
+                        <label>Display Name (optional)</label>
+                        <input id="comm-name" type="text" placeholder="Miele Vaskemaskine">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btn-commission">Pair &amp; Add Appliance</button>
+                <div id="comm-feedback" class="feedback-box"></div>
+            </div>
+
+            <!-- Method 2: Connect with Existing Keys -->
+            <div class="add-tab-pane" id="addtab-existing" style="display:none;">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+                    Use this if your appliance is already paired and you have its <code>GroupID</code> and <code>GroupKey</code>.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Appliance IP Address</label>
+                        <input id="pair-host" type="text" placeholder="192.168.1.50">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint ID (slug)</label>
+                        <input id="pair-endpoint" type="text" placeholder="oven">
+                    </div>
+                    <div class="form-group">
+                        <label>Display Name</label>
+                        <input id="pair-name" type="text" placeholder="Kitchen Oven H7264BP">
+                    </div>
+                    <div class="form-group">
+                        <label>Route (12-digit serial or "auto")</label>
+                        <input id="pair-route" type="text" value="auto">
+                    </div>
+                    <div class="form-group">
+                        <label>GroupID (16 hex chars)</label>
+                        <input id="pair-groupid" type="text" placeholder="8E156D44B8587D36">
+                    </div>
+                    <div class="form-group">
+                        <label>GroupKey (128 hex chars)</label>
+                        <input id="pair-groupkey" type="text" placeholder="128 hex characters...">
+                    </div>
+                    <div class="form-group full">
+                        <label>Or paste keys.json to auto-fill GroupID &amp; GroupKey</label>
+                        <textarea id="pair-keysjson" rows="3" placeholder='{"GroupID": "...", "GroupKey": "..."}'></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btn-pair-existing">Connect Appliance</button>
+                <div id="pair-feedback" class="feedback-box"></div>
+            </div>
+
+            <!-- Method 3: Wi-Fi SoftAP (Optional) -->
+            <div class="add-tab-pane" id="addtab-wifi" style="display:none;">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+                    <strong>Optional:</strong> Only needed if the appliance is not connected to your home Wi-Fi yet. Put the appliance into <strong>Miele@home → Via App</strong> mode and connect this host to its <code>Miele@home</code> hotspot.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Appliance SoftAP IP</label>
+                        <input id="wifi-ap-host" type="text" value="192.168.1.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Security Mode</label>
+                        <select id="wifi-sec">
+                            <option value="WPA2">WPA2</option>
+                            <option value="WPA">WPA</option>
+                            <option value="OPEN">OPEN</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Wi-Fi SSID</label>
+                        <input id="wifi-ssid" type="text" placeholder="MyHomeIoT">
+                    </div>
+                    <div class="form-group">
+                        <label>Wi-Fi Password</label>
+                        <input id="wifi-key" type="password" placeholder="Wi-Fi password">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btn-wifi-provision">Send Wi-Fi Credentials</button>
+                <div id="wifi-feedback" class="feedback-box"></div>
+            </div>
+
+            <!-- Method 4: Import YAML -->
+            <div class="add-tab-pane" id="addtab-yaml" style="display:none;">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+                    Migrate one or more appliances from an existing <code>MieleRESTServer.config</code> YAML file.
+                </p>
+                <div class="form-group">
+                    <label>Paste MieleRESTServer.config YAML</label>
+                    <textarea id="yaml-input" rows="8" placeholder="endpoints:
+  washer:
+    host: 192.168.1.50
+    groupId: ...
+    groupKey: ...
+    route: auto"></textarea>
+                </div>
+                <button class="btn btn-primary" id="btn-import-yaml">Import Appliances</button>
+                <div id="yaml-feedback" class="feedback-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pairing Success Popup -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <h2 class="modal-title">Appliance Connected</h2>
+                </div>
+                <button class="modal-close" onclick="closeSuccessModal()">✕</button>
+            </div>
+            <div class="success-hero">
+                <div class="success-icon">✓</div>
+                <h3 id="success-title" style="font-size:18px; margin-bottom:4px;">Appliance ready!</h3>
+                <p id="success-subtitle" style="font-size:13.5px; color:var(--text-secondary);"></p>
+            </div>
+            <div class="info-grid" id="success-details"></div>
+            <div id="success-keys-box" style="display:none; margin-bottom:14px;">
+                <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:8px;">
+                    Your keys are saved in the server database. You can also copy a backup of <code>keys.json</code>:
+                </p>
+                <button class="btn btn-secondary btn-sm" id="btn-copy-keys">Copy keys.json Backup</button>
+                <span id="copy-keys-status" style="font-size:12px; color:var(--text-success); margin-left:8px;"></span>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-secondary" id="btn-success-open">Open Appliance</button>
+                <button class="btn btn-primary" onclick="closeSuccessModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appliance Details Modal -->
+    <div class="modal" id="device-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span id="modal-icon" style="font-size:26px;">🧺</span>
+                    <h2 class="modal-title" id="modal-title">Appliance</h2>
+                    <span class="badge-pill" id="modal-tech-badge" style="background:var(--bg-primary); color:var(--text-secondary); border:1px solid var(--border-color);"></span>
+                </div>
+                <button class="modal-close" onclick="closeDeviceModal()">✕</button>
+            </div>
+
+            <div class="tabs" id="detail-tabs">
+                <button class="tab-btn active" data-tab="controls">Overview</button>
+                <button class="tab-btn" data-tab="stats">Statistics</button>
+                <button class="tab-btn" data-tab="history">History</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div class="detail-tab-pane" id="tab-controls">
+                <div id="modal-alert-banner" class="feedback-box" style="margin-top:0; margin-bottom:12px;"></div>
+                <div class="info-grid" id="modal-telemetry"></div>
+
+                <div class="controls-row">
+                    <button class="btn btn-primary" id="btn-start">▶ Start</button>
+                    <button class="btn btn-secondary" id="btn-pause">⏸ Pause</button>
+                    <button class="btn btn-secondary" id="btn-stop">⏹ Stop</button>
+                    <button class="btn btn-secondary" id="btn-wakeup">⚡ Wake Up</button>
+                    <button class="btn btn-secondary" id="btn-light-on">💡 Light On</button>
+                    <button class="btn btn-secondary" id="btn-light-off">🌑 Light Off</button>
+                    <button class="btn btn-secondary" id="btn-refresh-one">🔄 Refresh</button>
+                </div>
+
+                <details style="margin-bottom:10px; background:var(--bg-primary); border:1px solid var(--border-light); border-radius:12px; padding:10px 12px;">
+                    <summary style="cursor:pointer; font-size:13px; font-weight:650;">Settings (Rename / IP / Delete)</summary>
+                    <div class="form-grid" style="margin-top:10px;">
+                        <div class="form-group">
+                            <label>Display Name</label>
+                            <input id="edit-name" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>IP Address</label>
+                            <input id="edit-host" type="text">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-danger btn-sm" id="btn-delete-device">Delete Appliance</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-save-device">Save Changes</button>
+                    </div>
+                </details>
+
+                <details id="advanced-diagnostics" style="background:var(--bg-primary); border:1px solid var(--border-light); border-radius:12px; padding:10px 12px;">
+                    <summary style="cursor:pointer; font-size:13px; font-weight:650; color:var(--text-secondary);">Advanced &amp; Diagnostics</summary>
+                    <div class="info-grid" id="modal-tech-info" style="margin-top:10px;"></div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                        <button class="btn btn-secondary btn-sm" id="btn-probe-consumables">Check Alerts &amp; Sensors</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-walk-dop2">Walk DOP2 Tree</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-walk-dop2-cached">Cached DOP2</button>
+                    </div>
+                    <div id="dop2-leaf-row" style="display:flex; gap:6px; margin-bottom:10px; max-width:320px;">
+                        <input id="dop2-unit" type="number" value="2" placeholder="Unit" style="width:80px; min-height:34px; padding:4px 8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                        <input id="dop2-attr" type="number" value="256" placeholder="Attr" style="width:80px; min-height:34px; padding:4px 8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary);">
+                        <button class="btn btn-secondary btn-sm" id="btn-read-leaf">Read DOP2 Leaf</button>
+                    </div>
+                    <pre class="json-view" id="diag-output" style="display:none;"></pre>
+                </details>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div class="detail-tab-pane" id="tab-stats" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                    <span style="font-size:13px; color:var(--text-secondary);">Local cycle log &amp; usage breakdown (kept permanently).</span>
+                    <select id="stats-days" style="min-height:36px; padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-primary);">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="365">Last year</option>
+                        <option value="0">All time</option>
+                    </select>
+                </div>
+                <div class="info-grid" id="stats-kpis"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                    <div style="background:var(--bg-primary); border:1px solid var(--border-light); border-radius:12px; padding:12px;">
+                        <div style="font-size:12px; font-weight:650; color:var(--text-secondary); margin-bottom:8px;">Programs</div>
+                        <div style="height:180px; position:relative;"><canvas id="stats-program-chart"></canvas></div>
+                    </div>
+                    <div style="background:var(--bg-primary); border:1px solid var(--border-light); border-radius:12px; padding:12px;">
+                        <div style="font-size:12px; font-weight:650; color:var(--text-secondary); margin-bottom:8px;">Time of Day</div>
+                        <div style="height:180px; position:relative;"><canvas id="stats-hour-chart"></canvas></div>
+                    </div>
+                </div>
+                <details style="margin-bottom:14px; background:var(--bg-primary); border:1px solid var(--border-light); border-radius:12px; padding:10px 12px;">
+                    <summary style="cursor:pointer; font-size:13px; font-weight:650;">Optional: Energy &amp; Water Estimates per Program</summary>
+                    <p style="font-size:12px; color:var(--text-secondary); margin:6px 0 10px;">
+                        For appliances without DOP2 energy sensors (like WSF363), you can enter estimated kWh and litres per program.
+                    </p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Program Name (e.g. Cotton, DrainSpin)</label>
+                            <input id="est-program" type="text" placeholder="Cotton">
+                        </div>
+                        <div class="form-group">
+                            <label>Energy (kWh) / Water (L)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input id="est-kwh" type="number" step="0.01" min="0" placeholder="0.85">
+                                <input id="est-litres" type="number" step="1" min="0" placeholder="45">
+                                <button class="btn btn-secondary btn-sm" id="btn-save-estimate">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="est-list" style="font-size:12px; color:var(--text-secondary);"></div>
+                </details>
+                <div style="font-size:12.5px; font-weight:650; color:var(--text-secondary); margin-bottom:6px;">Recent Runs</div>
+                <div id="stats-runs-list" style="max-height:220px; overflow:auto; border:1px solid var(--border-light); border-radius:12px;"></div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="detail-tab-pane" id="tab-history" style="display:none;">
+                <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                    <select id="history-hours" style="min-height:36px; padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-primary);">
+                        <option value="24">Last 24 hours</option>
+                        <option value="168">Last 7 days</option>
+                        <option value="720">Last 30 days</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="history-chart"></canvas>
+                </div>
+                <div id="history-msg" style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Statistics Modal -->
+    <div class="modal" id="global-stats-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <h2 class="modal-title">📊 Home Appliance Statistics</h2>
+                </div>
+                <button class="modal-close" onclick="closeGlobalStatsModal()">✕</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:13px; color:var(--text-secondary);">Combined cycle statistics across all local appliances.</span>
+                <select id="global-stats-days" style="min-height:36px; padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-primary);">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="365">Last year</option>
+                    <option value="0">All time</option>
+                </select>
+            </div>
+            <div class="info-grid" id="global-stats-kpis"></div>
+            <div style="font-size:12.5px; font-weight:650; color:var(--text-secondary); margin-bottom:6px;">Recent Cycles</div>
+            <div id="global-stats-runs" style="max-height:280px; overflow:auto; border:1px solid var(--border-light); border-radius:12px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let devices = [];
+        let currentDevice = null;
+        let eventSource = null;
+        let chartJsLoaded = false;
+        let historyChart = null;
+
+        const CATEGORY_ICONS = {
+            washer: "🧺",
+            dryer: "🌬️",
+            washer_dryer: "🧺",
+            dishwasher: "🍽️",
+            oven: "🔥",
+            microwave: "📡",
+            cooktop: "🍳",
+            hood: "💨",
+            coffee: "☕",
+            fridge: "🧊",
+            freezer: "❄️",
+            fridge_freezer: "🧊",
+            wine: "🍷",
+            vacuum: "🤖",
+            warming_drawer: "♨️",
+            appliance: "🔌"
+        };
+
+        function escapeHtml(value) {
+            const div = document.createElement("div");
+            div.textContent = value == null ? "" : String(value);
+            return div.innerHTML;
+        }
+
+        function showBanner(msg, isError = false) {
+            const el = document.getElementById("global-banner");
+            el.textContent = msg;
+            el.className = "banner " + (isError ? "error" : "success");
+            setTimeout(() => { el.className = "banner"; }, 5000);
+        }
+
+        // Theme toggle
+        function initTheme() {
+            const saved = localStorage.getItem("miele-theme");
+            if (saved) document.documentElement.setAttribute("data-theme", saved);
+            updateThemeIcon();
+        }
+        function updateThemeIcon() {
+            const cur = document.documentElement.getAttribute("data-theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const isDark = cur === "dark" || (!cur && prefersDark);
+            document.getElementById("theme-toggle").textContent = isDark ? "☀️" : "🌙";
+        }
+        document.getElementById("theme-toggle").addEventListener("click", () => {
+            const cur = document.documentElement.getAttribute("data-theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const next = (cur === "dark" || (!cur && prefersDark)) ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", next);
+            localStorage.setItem("miele-theme", next);
+            updateThemeIcon();
+        });
+
+        // Editable home name
+        document.getElementById("home-name").addEventListener("click", async () => {
+            const current = document.getElementById("home-name").textContent;
+            const next = prompt("Enter display name for your Miele Local server:", current);
+            if (!next || !next.trim() || next.trim() === current) return;
+            const resp = await fetch("/settings/home-name", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: next.trim() }),
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                document.getElementById("home-name").textContent = data.name;
+            }
+        });
+
+        function formatDuration(mins) {
+            if (mins == null || mins < 0) return "—";
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        }
+
+        function formatEnumLabel(val, stripPrefix = false) {
+            if (!val) return "";
+            let text = String(val);
+            if (stripPrefix) {
+                text = text.replace(/^(WashingMachine|TumbleDryer|Dishwasher|Oven)/, "");
+            }
+            if (text === "EndedSuccessfully") return "Finished";
+            if (text === "WaitingToStart") return "Waiting to Start";
+            if (text === "NotSelected" || text === "NoProgram" || text === "NotUsed") return "";
+            return text.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([A-Za-z])(\d)/g, "$1 $2").trim();
+        }
+
+        function isApplianceIdleOrOff(st) {
+            const code = st ? st.Status : null;
+            return code === 0 || code === 1 || code === 10 || code === 144;
+        }
+
+        function isProgramActiveOrQueued(st) {
+            const code = st ? st.Status : null;
+            return code === 3 || code === 4 || code === 5 || code === 6 || code === 11 || code === 13 || code === 14 || code === 15;
+        }
+
+        function formatShortError(msg) {
+            if (!msg) return "";
+            const s = String(msg);
+            if (s.includes("HTTP 404")) return "Asleep / 404";
+            if (s.includes("timed out") || s.includes("Communication error")) return "Offline";
+            if (s.includes("401") || s.includes("403")) return "Auth error";
+            return "Comm error";
+        }
+
+        function formatFinishEta(remainingMins) {
+            if (remainingMins == null || remainingMins <= 0) return "";
+            const d = new Date(Date.now() + remainingMins * 60000);
+            return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }
+
+        function getCardStateClass(d) {
+            const st = d.state || {};
+            if (d.last_error && !d.state) return "state-error";
+            const code = st.Status;
+            if (st.SignalFailure || code === 8 || code === 9) return "state-error";
+            if (code === 5 || code === 11 || code === 13 || code === 14 || code === 15) return "state-running";
+            if (code === 3 || code === 4 || code === 6) return "state-ready";
+            if (code === 7) return "state-done";
+            if (code === 2 || code === 10) return "state-standby";
+            return "state-off";
+        }
+
+        function renderDevices() {
+            const grid = document.getElementById("devices-grid");
+            document.getElementById("device-count").textContent = devices.length;
+
+            if (devices.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No Miele appliances configured yet</h2>
+                        <p>Commission a Miele@home appliance on your LAN, connect an appliance with existing keys, or import a MieleRESTServer YAML config.</p>
+                        <button class="btn btn-primary" onclick="openAddModal()">+ Add First Appliance</button>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = devices.map(d => {
+                const st = d.state || {};
+                const icon = CATEGORY_ICONS[d.category] || "🔌";
+                const stateCls = getCardStateClass(d);
+                const offOrIdle = isApplianceIdleOrOff(st);
+                const activeCycle = isProgramActiveOrQueued(st);
+                const statusText = st.DeepSleep
+                    ? "Off · Sleep"
+                    : (formatEnumLabel(st.DecodedStatus) || (d.last_error ? "Offline" : "Unknown"));
+                const progName = formatEnumLabel(st.DecodedProgramID);
+                const phaseName = formatEnumLabel(st.DecodedProgramPhase, true);
+
+                let prog = d.decoded_device_type || "Idle";
+                if (offOrIdle) {
+                    prog = progName ? `Last: ${progName}` : (d.decoded_device_type || "Standby");
+                } else if (st.Status === 7) {
+                    prog = progName ? `${progName} · Finished` : "Finished";
+                } else if (progName) {
+                    prog = phaseName ? `${progName} · ${phaseName}` : progName;
+                } else if (phaseName) {
+                    prog = phaseName;
+                }
+
+                const pct = activeCycle ? Math.max(0, Math.min(100, Number(st.ProgressPercent || 0))) : 0;
+                const rem = activeCycle ? st.RemainingMinutes : null;
+                const eta = formatFinishEta(rem);
+
+                const badges = [];
+                if (st.SignalDoor) badges.push("🚪 Door");
+                if (st.SignalInfo) badges.push("ℹ️ Info");
+                if (st.SignalFailure) badges.push("⚠️ Fault");
+                if (st.RemoteStartReady) badges.push("▶ Remote Ready");
+                else if (d.remote_start_capable) badges.push("📡 Remote");
+
+                const metrics = [];
+                if (!offOrIdle) {
+                    if (st.CurrentTemperature != null) metrics.push(`🌡 ${st.CurrentTemperature}°C`);
+                    if (st.TargetTemperatureValue != null) metrics.push(`🎯 ${st.TargetTemperatureValue}°C`);
+                    if (activeCycle && st.SpinningSpeed && st.SpinningSpeed > 0) metrics.push(`🌀 ${st.SpinningSpeed} rpm`);
+                    if (activeCycle && st.StartDelayMinutes > 0) metrics.push(`⏳ Delay ${formatDuration(st.StartDelayMinutes)}`);
+                }
+
+                const footerRight = rem > 0
+                    ? `${formatDuration(rem)} left${eta ? " · ~" + eta : ""}`
+                    : (d.last_error ? formatShortError(d.last_error) : (st.DeepSleep ? "Deep sleep" : (d.host || "")));
+
+                return `
+                    <div class="device-card ${stateCls}" onclick="openDeviceModal(${d.device_id})">
+                        <div class="card-top">
+                            <div class="card-icon">${icon}</div>
+                            <div class="card-badges">
+                                ${badges.map(b => `<span class="badge-pill">${escapeHtml(b)}</span>`).join("")}
+                            </div>
+                        </div>
+                        <div class="card-main">
+                            <div class="card-status">${escapeHtml(statusText)}</div>
+                            <div class="card-program">${escapeHtml(prog)}</div>
+                            ${metrics.length ? `<div class="card-metrics">${metrics.map(m => `<span>${escapeHtml(m)}</span>`).join("")}</div>` : ""}
+                        </div>
+                        <div>
+                            ${rem > 0 || pct > 0 ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>` : ""}
+                            <div class="card-footer">
+                                <div>
+                                    <div class="card-name">${escapeHtml(d.name)}</div>
+                                    <div class="card-sub">${escapeHtml(d.tech_type || d.endpoint)}</div>
+                                </div>
+                                <div style="text-align:right">${escapeHtml(footerRight)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        async function loadStatusAndDevices() {
+            try {
+                const [statusResp, devResp] = await Promise.all([fetch("/status"), fetch("/devices")]);
+                if (statusResp.ok) {
+                    const st = await statusResp.json();
+                    document.getElementById("version-number").textContent = "v" + st.version;
+                    document.getElementById("home-name").textContent = st.home_name || "Miele Local Server";
+                    document.getElementById("last-update").textContent = st.last_update
+                        ? new Date(st.last_update * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "—";
+                }
+                if (devResp.ok) {
+                    const data = await devResp.json();
+                    devices = data.devices || [];
+                    renderDevices();
+                    if (currentDevice) {
+                        const updated = devices.find(x => x.device_id === currentDevice.device_id);
+                        if (updated) {
+                            currentDevice = updated;
+                            renderModalTelemetry();
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed loading devices:", err);
+            }
+        }
+
+        function connectSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource("/events");
+            const dot = document.getElementById("sse-dot");
+            const label = document.getElementById("sse-status");
+
+            eventSource.onopen = () => {
+                dot.classList.add("connected");
+                label.textContent = "Connected";
+            };
+            eventSource.onmessage = (evt) => {
+                try {
+                    const data = JSON.parse(evt.data);
+                    if (data.type === "device_update") {
+                        loadStatusAndDevices();
+                    }
+                } catch (_) {}
+            };
+            eventSource.onerror = () => {
+                dot.classList.remove("connected");
+                label.textContent = "Reconnecting…";
+            };
+        }
+
+        let lastSuccessDevice = null;
+        let lastProvisioningInfo = null;
+
+        function setFeedback(elId, type, title, bodyHtml = "") {
+            const el = document.getElementById(elId);
+            el.className = "feedback-box " + type;
+            el.innerHTML = `<strong>${escapeHtml(title)}</strong>${bodyHtml ? "<div style='margin-top:4px;'>" + bodyHtml + "</div>" : ""}`;
+        }
+
+        function clearFeedback(elId) {
+            const el = document.getElementById(elId);
+            el.className = "feedback-box";
+            el.innerHTML = "";
+        }
+
+        function openAddModal() {
+            ["comm-feedback", "pair-feedback", "wifi-feedback", "yaml-feedback"].forEach(clearFeedback);
+            document.getElementById("add-modal").classList.add("open");
+        }
+        function closeAddModal() {
+            document.getElementById("add-modal").classList.remove("open");
+        }
+        function openSuccessModal(device, provisioningInfo = null, subtitleText = null) {
+            lastSuccessDevice = device;
+            lastProvisioningInfo = provisioningInfo;
+            const name = device ? device.name : "Appliance";
+            const model = device ? [device.tech_type, device.decoded_device_type].filter(Boolean).join(" · ") : "";
+            document.getElementById("success-title").textContent = `${name} is now connected!`;
+            document.getElementById("success-subtitle").textContent =
+                subtitleText || (model ? `Detected ${model} and added it to your dashboard.` : "Added to your dashboard.");
+
+            const detailsEl = document.getElementById("success-details");
+            if (device) {
+                const rows = [
+                    ["IP Address", device.host || "—"],
+                    ["Endpoint Slug", device.endpoint || "—"],
+                    ["Route / Serial", device.route || "—"],
+                    ["DOP2 Support", device.dop2_supported === true ? "Yes" : (device.dop2_supported === false ? "No" : "Unknown")],
+                ];
+                detailsEl.innerHTML = rows.map(([l, v]) =>
+                    `<div class="info-box"><div class="info-label">${escapeHtml(l)}</div><div class="info-val">${escapeHtml(v)}</div></div>`
+                ).join("");
+            } else {
+                detailsEl.innerHTML = "";
+            }
+
+            const keysBox = document.getElementById("success-keys-box");
+            keysBox.style.display = provisioningInfo ? "block" : "none";
+            document.getElementById("copy-keys-status").textContent = "";
+            document.getElementById("btn-success-open").style.display = device ? "inline-flex" : "none";
+            document.getElementById("success-modal").classList.add("open");
+        }
+        function closeSuccessModal() {
+            document.getElementById("success-modal").classList.remove("open");
+        }
+        document.getElementById("btn-success-open").addEventListener("click", () => {
+            const dev = lastSuccessDevice;
+            closeSuccessModal();
+            if (dev) openDeviceModal(dev.device_id);
+        });
+        document.getElementById("btn-copy-keys").addEventListener("click", async () => {
+            if (!lastProvisioningInfo) return;
+            await navigator.clipboard.writeText(JSON.stringify(lastProvisioningInfo, null, 2));
+            document.getElementById("copy-keys-status").textContent = "Copied!";
+        });
+
+        document.getElementById("btn-add-appliance").addEventListener("click", openAddModal);
+
+        document.querySelectorAll("#add-tabs .tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#add-tabs .tab-btn").forEach(b => b.classList.remove("active"));
+                document.querySelectorAll(".add-tab-pane").forEach(p => p.style.display = "none");
+                btn.classList.add("active");
+                document.getElementById("addtab-" + btn.dataset.addtab).style.display = "block";
+            });
+        });
+
+        document.getElementById("pair-keysjson").addEventListener("input", (e) => {
+            try {
+                const parsed = JSON.parse(e.target.value);
+                if (parsed.GroupID) document.getElementById("pair-groupid").value = parsed.GroupID;
+                if (parsed.GroupKey) document.getElementById("pair-groupkey").value = parsed.GroupKey;
+            } catch (_) {}
+        });
+
+        document.getElementById("btn-commission").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-commission");
+            const host = document.getElementById("comm-host").value.trim();
+            const endpoint_name = document.getElementById("comm-endpoint").value.trim() || "washer";
+            const display_name = document.getElementById("comm-name").value.trim() || null;
+            if (!host) {
+                setFeedback("comm-feedback", "error", "IP address required", "Please enter the appliance IP address (e.g. 10.0.0.185).");
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = "Pairing…";
+            setFeedback(
+                "comm-feedback",
+                "info",
+                `Pairing with ${host}…`,
+                "Generating cryptographic keys, uploading them to the appliance, and reading device info."
+            );
+            try {
+                const resp = await fetch("/setup/commission", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ host, endpoint_name, display_name, save_on_success: true }),
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    await loadStatusAndDevices();
+                    closeAddModal();
+                    openSuccessModal(
+                        data.device || null,
+                        data.provisioning_info || null,
+                        data.save_warning || null
+                    );
+                } else {
+                    const title = data.error_title || "Pairing failed";
+                    const steps = Array.isArray(data.steps_to_fix) && data.steps_to_fix.length
+                        ? `<ol>${data.steps_to_fix.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`
+                        : `<p>${escapeHtml(data.hint || "Check the appliance IP and try again.")}</p>`;
+                    const attemptSummary = Array.isArray(data.attempts)
+                        ? data.attempts.map(a => `${a.url}: ${a.status ? "HTTP " + a.status : a.error}`).join("\n")
+                        : "";
+                    const details = attemptSummary
+                        ? `<details><summary>Technical details</summary><pre style="margin-top:6px;white-space:pre-wrap;">${escapeHtml(attemptSummary)}</pre></details>`
+                        : "";
+                    setFeedback("comm-feedback", "error", title, steps + details);
+                }
+            } catch (err) {
+                setFeedback("comm-feedback", "error", "Connection error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Pair & Add Appliance";
+            }
+        });
+
+        document.getElementById("btn-pair-existing").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-pair-existing");
+            const payload = {
+                host: document.getElementById("pair-host").value.trim(),
+                endpoint_name: document.getElementById("pair-endpoint").value.trim(),
+                display_name: document.getElementById("pair-name").value.trim() || null,
+                route: document.getElementById("pair-route").value.trim() || "auto",
+                group_id: document.getElementById("pair-groupid").value.trim(),
+                group_key: document.getElementById("pair-groupkey").value.trim(),
+            };
+            btn.disabled = true;
+            btn.textContent = "Connecting…";
+            setFeedback("pair-feedback", "info", `Connecting to ${payload.host || "appliance"}…`, "Verifying keys and reading device state.");
+            try {
+                const resp = await fetch("/setup/pair", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    const msg = data.detail || data.error || "Could not connect using the provided keys.";
+                    setFeedback("pair-feedback", "error", "Connection failed", `<p>${escapeHtml(msg)}</p>`);
+                    return;
+                }
+                await loadStatusAndDevices();
+                closeAddModal();
+                openSuccessModal(data.device || null);
+            } catch (err) {
+                setFeedback("pair-feedback", "error", "Connection error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Connect Appliance";
+            }
+        });
+
+        document.getElementById("btn-wifi-provision").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-wifi-provision");
+            const payload = {
+                ap_host: document.getElementById("wifi-ap-host").value.trim(),
+                ssid: document.getElementById("wifi-ssid").value.trim(),
+                security: document.getElementById("wifi-sec").value,
+                wifi_key: document.getElementById("wifi-key").value,
+            };
+            btn.disabled = true;
+            btn.textContent = "Sending…";
+            setFeedback("wifi-feedback", "info", "Sending Wi-Fi credentials…", `Contacting ${escapeHtml(payload.ap_host)}…`);
+            try {
+                const resp = await fetch("/setup/provision-wifi", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    setFeedback(
+                        "wifi-feedback",
+                        "success",
+                        "Wi-Fi credentials sent!",
+                        "The appliance should now leave SoftAP mode and join your Wi-Fi. Once it has an IP on your network, switch to the 'Pair New on LAN' tab to add it."
+                    );
+                } else {
+                    setFeedback(
+                        "wifi-feedback",
+                        "error",
+                        "Could not send Wi-Fi credentials",
+                        "Verify this host is connected to the Miele@home Wi-Fi hotspot and the SoftAP IP (usually 192.168.1.1) is correct."
+                    );
+                }
+            } catch (err) {
+                setFeedback("wifi-feedback", "error", "Connection error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send Wi-Fi Credentials";
+            }
+        });
+
+        document.getElementById("btn-import-yaml").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-import-yaml");
+            const yaml_content = document.getElementById("yaml-input").value;
+            btn.disabled = true;
+            btn.textContent = "Importing…";
+            setFeedback("yaml-feedback", "info", "Importing appliances…", "Validating configuration and connecting to devices.");
+            try {
+                const resp = await fetch("/setup/import-yaml", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ yaml_content }),
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    await loadStatusAndDevices();
+                    closeAddModal();
+                    openSuccessModal(
+                        (data.devices && data.devices[0]) || null,
+                        null,
+                        `Imported ${data.imported} appliance(s) from YAML.`
+                    );
+                } else {
+                    setFeedback("yaml-feedback", "error", "YAML import failed", escapeHtml(data.detail || "Invalid YAML format."));
+                }
+            } catch (err) {
+                setFeedback("yaml-feedback", "error", "Import error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Import Appliances";
+            }
+        });
+
+        // Device Details Modal
+        function openDeviceModal(deviceId) {
+            currentDevice = devices.find(d => d.device_id === deviceId);
+            if (!currentDevice) return;
+            document.getElementById("modal-icon").textContent = CATEGORY_ICONS[currentDevice.category] || "🔌";
+            document.getElementById("modal-title").textContent = currentDevice.name;
+            document.getElementById("modal-tech-badge").textContent =
+                [currentDevice.tech_type, currentDevice.decoded_device_type].filter(Boolean).join(" · ") || currentDevice.endpoint;
+            document.getElementById("edit-name").value = currentDevice.name;
+            document.getElementById("edit-host").value = currentDevice.host;
+            renderModalTelemetry();
+            switchDetailTab("controls");
+            document.getElementById("device-modal").classList.add("open");
+        }
+
+        function closeDeviceModal() {
+            document.getElementById("device-modal").classList.remove("open");
+            currentDevice = null;
+        }
+
+        function switchDetailTab(tabName) {
+            document.querySelectorAll("#detail-tabs .tab-btn").forEach(b => {
+                b.classList.toggle("active", b.dataset.tab === tabName);
+            });
+            document.querySelectorAll(".detail-tab-pane").forEach(p => {
+                p.style.display = p.id === "tab-" + tabName ? "block" : "none";
+            });
+            if (tabName === "history" && currentDevice) {
+                loadHistoryChart(currentDevice.device_id, Number(document.getElementById("history-hours").value));
+            } else if (tabName === "stats" && currentDevice) {
+                loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
+            }
+        }
+
+        document.querySelectorAll("#detail-tabs .tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => switchDetailTab(btn.dataset.tab));
+        });
+
+        function renderModalTelemetry() {
+            if (!currentDevice) return;
+            const st = currentDevice.state || {};
+
+            const alertBanner = document.getElementById("modal-alert-banner");
+            if (currentDevice.last_error) {
+                const is404 = String(currentDevice.last_error).includes("HTTP 404");
+                alertBanner.className = "feedback-box " + (is404 ? "info" : "error");
+                alertBanner.innerHTML = is404
+                    ? `<strong>💤 Appliance is in deep sleep / standby</strong><div style='margin-top:3px;'>${escapeHtml(currentDevice.last_error)}<br>Miele appliances turn off their internal bus ~15 min after switching off; telemetry resumes automatically when turned back on.</div>`
+                    : `<strong>⚠️ Communication issue</strong><div style='margin-top:3px;'>${escapeHtml(currentDevice.last_error)}</div>`;
+            } else if (st.SignalFailure) {
+                alertBanner.className = "feedback-box error";
+                alertBanner.innerHTML = "<strong>⚠️ Fault reported</strong><div style='margin-top:3px;'>Check the appliance display for error details.</div>";
+            } else if (st.SignalInfo) {
+                alertBanner.className = "feedback-box info";
+                alertBanner.innerHTML = "<strong>ℹ️ Appliance notification</strong><div style='margin-top:3px;'>The appliance has an active info message (e.g. refill salt, rinse aid, or detergent).</div>";
+            } else {
+                alertBanner.className = "feedback-box";
+                alertBanner.innerHTML = "";
+            }
+
+            const offOrIdle = isApplianceIdleOrOff(st);
+            const activeCycle = isProgramActiveOrQueued(st);
+            const statusLabel = st.DeepSleep
+                ? "Off (Deep Sleep)"
+                : (formatEnumLabel(st.DecodedStatus) || "Unknown");
+            const progLabel = formatEnumLabel(st.DecodedProgramID);
+            const phaseLabel = formatEnumLabel(st.DecodedProgramPhase, true);
+
+            const items = [
+                ["Status", statusLabel],
+                ["Door", st.SignalDoor ? "Open" : "Closed"],
+            ];
+            if (offOrIdle) {
+                if (progLabel) items.push(["Last Program", progLabel]);
+            } else {
+                items.push(["Program", progLabel || "—"]);
+                if (phaseLabel) items.push(["Phase", phaseLabel]);
+                if (activeCycle && st.RemainingMinutes != null) {
+                    items.push(["Remaining", formatDuration(st.RemainingMinutes)]);
+                }
+                if (activeCycle && st.ProgressPercent != null && st.ProgressPercent > 0) {
+                    items.push(["Progress", `${st.ProgressPercent}%`]);
+                }
+                if (st.CurrentTemperature != null) {
+                    items.push(["Current Temp", `${st.CurrentTemperature} °C`]);
+                }
+                if (st.TargetTemperatureValue != null) {
+                    items.push(["Target Temp", `${st.TargetTemperatureValue} °C`]);
+                }
+                if (activeCycle && st.SpinningSpeed && st.SpinningSpeed > 0) {
+                    items.push(["Spin Speed", `${st.SpinningSpeed} rpm`]);
+                }
+            }
+            if (st.RemoteStartReady) {
+                items.push(["Remote Start", "Ready"]);
+            }
+
+            document.getElementById("modal-telemetry").innerHTML = items.map(([label, val]) => `
+                <div class="info-box">
+                    <div class="info-label">${escapeHtml(label)}</div>
+                    <div class="info-val">${escapeHtml(val)}</div>
+                </div>
+            `).join("");
+
+            // Context-aware control buttons (hide irrelevant buttons like Light when unsupported)
+            const isRunning = st.Status === 5 || st.Status === 6;
+            const hasLight = st.Light !== undefined && st.Light !== 0;
+            document.getElementById("btn-pause").style.display = isRunning ? "inline-flex" : "none";
+            document.getElementById("btn-stop").style.display = isRunning ? "inline-flex" : "none";
+            document.getElementById("btn-wakeup").style.display = isRunning ? "none" : "inline-flex";
+            document.getElementById("btn-light-on").style.display = hasLight ? "inline-flex" : "none";
+            document.getElementById("btn-light-off").style.display = hasLight ? "inline-flex" : "none";
+
+            const techItems = [
+                ["IP Address", currentDevice.host || "—"],
+                ["Serial / Route", currentDevice.serial_number || currentDevice.route || "—"],
+                ["XKM Module", [currentDevice.xkm_tech_type, currentDevice.xkm_release_version].filter(Boolean).join(" v") || "—"],
+                ["DOP2", currentDevice.dop2_supported === true ? "Supported" : (currentDevice.dop2_supported === false ? "Not supported" : "Unknown")],
+            ];
+            document.getElementById("modal-tech-info").innerHTML = techItems.map(([label, val]) => `
+                <div class="info-box">
+                    <div class="info-label">${escapeHtml(label)}</div>
+                    <div class="info-val">${escapeHtml(val)}</div>
+                </div>
+            `).join("");
+
+            const hasDop2 = currentDevice.dop2_supported !== false;
+            document.getElementById("btn-walk-dop2").style.display = hasDop2 ? "inline-flex" : "none";
+            document.getElementById("btn-walk-dop2-cached").style.display = hasDop2 ? "inline-flex" : "none";
+            document.getElementById("dop2-leaf-row").style.display = hasDop2 ? "flex" : "none";
+        }
+
+        async function runDeviceAction(path, method = "POST", body = null) {
+            if (!currentDevice) return;
+            const opts = { method, headers: {} };
+            if (body !== null) {
+                opts.headers["Content-Type"] = "application/json";
+                opts.body = JSON.stringify(body);
+            }
+            const resp = await fetch(`/devices/${currentDevice.device_id}${path}`, opts);
+            const data = await resp.json();
+            if (!resp.ok) {
+                showBanner(data.error || data.detail || "Action failed", true);
+                return null;
+            }
+            showBanner("Command sent successfully");
+            await loadStatusAndDevices();
+            return data;
+        }
+
+        document.getElementById("btn-start").addEventListener("click", () => runDeviceAction("/start", "POST", { wake_first: true }));
+        document.getElementById("btn-wakeup").addEventListener("click", () => runDeviceAction("/wakeup", "POST"));
+        document.getElementById("btn-pause").addEventListener("click", () => runDeviceAction("/pause", "POST"));
+        document.getElementById("btn-stop").addEventListener("click", () => runDeviceAction("/stop", "POST"));
+        document.getElementById("btn-light-on").addEventListener("click", () => runDeviceAction("/light", "POST", { on: true }));
+        document.getElementById("btn-light-off").addEventListener("click", () => runDeviceAction("/light", "POST", { on: false }));
+        document.getElementById("btn-refresh-one").addEventListener("click", () => runDeviceAction("/refresh", "POST"));
+        document.getElementById("btn-refresh-all").addEventListener("click", async () => {
+            await fetch("/refresh", { method: "POST" });
+            await loadStatusAndDevices();
+        });
+
+        document.getElementById("btn-save-device").addEventListener("click", async () => {
+            if (!currentDevice) return;
+            const resp = await fetch(`/devices/${currentDevice.device_id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    display_name: document.getElementById("edit-name").value.trim(),
+                    host: document.getElementById("edit-host").value.trim(),
+                }),
+            });
+            if (resp.ok) {
+                showBanner("Appliance updated");
+                await loadStatusAndDevices();
+                document.getElementById("modal-title").textContent = currentDevice.name;
+            }
+        });
+
+        document.getElementById("btn-delete-device").addEventListener("click", async () => {
+            if (!currentDevice) return;
+            if (!confirm(`Delete ${currentDevice.name}? History will also be removed.`)) return;
+            const resp = await fetch(`/devices/${currentDevice.device_id}`, { method: "DELETE" });
+            if (resp.ok) {
+                closeDeviceModal();
+                showBanner("Appliance deleted");
+                await loadStatusAndDevices();
+            }
+        });
+
+        // Diagnostics (moved under collapsed Advanced & Diagnostics)
+        document.getElementById("btn-probe-consumables").addEventListener("click", async () => {
+            if (!currentDevice) return;
+            const out = document.getElementById("diag-output");
+            out.style.display = "block";
+            out.textContent = "Checking alerts & sensors…";
+            const resp = await fetch(`/devices/${currentDevice.device_id}/consumables`);
+            out.textContent = JSON.stringify(await resp.json(), null, 2);
+        });
+
+        async function loadDop2Tree(cached) {
+            if (!currentDevice) return;
+            const out = document.getElementById("diag-output");
+            out.style.display = "block";
+            out.textContent = cached ? "Loading cached DOP2 tree…" : "Walking DOP2 tree…";
+            const resp = await fetch(`/devices/${currentDevice.device_id}/dop2?cached=${cached ? "true" : "false"}`);
+            out.textContent = JSON.stringify(await resp.json(), null, 2);
+        }
+        document.getElementById("btn-walk-dop2").addEventListener("click", () => loadDop2Tree(false));
+        document.getElementById("btn-walk-dop2-cached").addEventListener("click", () => loadDop2Tree(true));
+        document.getElementById("btn-read-leaf").addEventListener("click", async () => {
+            if (!currentDevice) return;
+            const unit = document.getElementById("dop2-unit").value;
+            const attr = document.getElementById("dop2-attr").value;
+            const out = document.getElementById("diag-output");
+            out.style.display = "block";
+            out.textContent = `Reading DOP2/${unit}/${attr}…`;
+            const resp = await fetch(`/devices/${currentDevice.device_id}/dop2/${unit}/${attr}`);
+            out.textContent = JSON.stringify(await resp.json(), null, 2);
+        });
+
+        // History Chart (lazy Chart.js)
+        async function ensureChartJs() {
+            if (chartJsLoaded) return true;
+            const s1 = document.createElement("script");
+            s1.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js";
+            await new Promise((res, rej) => { s1.onload = res; s1.onerror = rej; document.head.appendChild(s1); });
+            const s2 = document.createElement("script");
+            s2.src = "https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js";
+            await new Promise((res, rej) => { s2.onload = res; s2.onerror = rej; document.head.appendChild(s2); });
+            chartJsLoaded = true;
+            return true;
+        }
+
+        async function loadHistoryChart(deviceId, hours) {
+            const msg = document.getElementById("history-msg");
+            msg.textContent = "Loading history…";
+            try {
+                await ensureChartJs();
+                const resp = await fetch(`/devices/${deviceId}/history?hours=${hours}&limit=1000`);
+                const data = await resp.json();
+                const rows = (data.history || []).slice().reverse();
+                if (rows.length === 0) {
+                    msg.textContent = "No history recorded yet for this period.";
+                    if (historyChart) { historyChart.destroy(); historyChart = null; }
+                    return;
+                }
+                msg.textContent = `${rows.length} recorded state points`;
+                if (historyChart) historyChart.destroy();
+
+                const ctx = document.getElementById("history-chart").getContext("2d");
+                historyChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: rows.map(r => new Date(r.timestamp)),
+                        datasets: [
+                            {
+                                label: "Progress (%)",
+                                data: rows.map(r => r.progress_percent ?? 0),
+                                borderColor: "#4CAF50",
+                                backgroundColor: "rgba(76, 175, 80, 0.12)",
+                                fill: true,
+                                tension: 0.2,
+                                pointRadius: 0,
+                                yAxisID: "yPct",
+                            },
+                            {
+                                label: "Current Temp (°C)",
+                                data: rows.map(r => r.current_temperature),
+                                borderColor: "#2196F3",
+                                stepped: "before",
+                                pointRadius: 0,
+                                yAxisID: "yTemp",
+                            },
+                            {
+                                label: "Target Temp (°C)",
+                                data: rows.map(r => r.target_temperature),
+                                borderColor: "#cc002b",
+                                borderDash: [5, 5],
+                                stepped: "before",
+                                pointRadius: 0,
+                                yAxisID: "yTemp",
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: "time" },
+                            yPct: { position: "left", min: 0, max: 100, title: { display: true, text: "Progress %" } },
+                            yTemp: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Temp °C" } },
+                        },
+                    },
+                });
+            } catch (err) {
+                msg.textContent = "Could not load chart: " + err.message;
+            }
+        }
+
+        document.getElementById("history-hours").addEventListener("change", () => {
+            if (currentDevice) loadHistoryChart(currentDevice.device_id, Number(document.getElementById("history-hours").value));
+        });
+
+        let statsProgramChart = null;
+        let statsHourChart = null;
+
+        function renderRunsTable(runs, showDeviceName = false, allowDelete = false) {
+            if (!runs || runs.length === 0) {
+                return `<div style="padding:18px; text-align:center; color:var(--text-muted); font-size:13px;">No completed runs logged yet. Runs are recorded automatically whenever an appliance runs and finishes.</div>`;
+            }
+            return `
+                <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                    <thead>
+                        <tr style="background:var(--bg-primary); text-align:left; border-bottom:1px solid var(--border-light);">
+                            <th style="padding:8px 10px;">Started</th>
+                            ${showDeviceName ? '<th style="padding:8px 10px;">Appliance</th>' : ""}
+                            <th style="padding:8px 10px;">Program</th>
+                            <th style="padding:8px 10px;">Duration</th>
+                            <th style="padding:8px 10px;">Temp / Spin</th>
+                            <th style="padding:8px 10px;">Outcome</th>
+                            <th style="padding:8px 10px;">Est./DOP2</th>
+                            ${allowDelete ? '<th style="padding:8px 6px;"></th>' : ""}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${runs.map(r => {
+                            const dt = new Date(r.started_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                            const specs = [
+                                r.target_temperature != null ? r.target_temperature + "°C" : null,
+                                r.spinning_speed ? r.spinning_speed + " rpm" : null,
+                            ].filter(Boolean).join(" · ") || "—";
+                            const cons = [
+                                r.energy_kwh != null ? r.energy_kwh + " kWh" : null,
+                                r.water_litres != null ? r.water_litres + " L" : null,
+                            ].filter(Boolean).join(" / ") || "—";
+                            return `
+                                <tr style="border-bottom:1px solid var(--border-light);">
+                                    <td style="padding:7px 10px;">${escapeHtml(dt)}</td>
+                                    ${showDeviceName ? `<td style="padding:7px 10px;">${escapeHtml(r.device_name || r.endpoint)}</td>` : ""}
+                                    <td style="padding:7px 10px; font-weight:600;">${escapeHtml(r.program)}</td>
+                                    <td style="padding:7px 10px;">${escapeHtml(formatDuration(r.duration_minutes))}</td>
+                                    <td style="padding:7px 10px;">${escapeHtml(specs)}</td>
+                                    <td style="padding:7px 10px;">${escapeHtml(r.outcome)}</td>
+                                    <td style="padding:7px 10px;">${escapeHtml(cons)}</td>
+                                    ${allowDelete ? `<td style="padding:7px 6px;"><button class="btn btn-secondary btn-sm" style="min-height:24px;padding:2px 7px;" onclick="deleteRun(${r.device_id}, ${r.run_id})">✕</button></td>` : ""}
+                                </tr>`;
+                        }).join("")}
+                    </tbody>
+                </table>`;
+        }
+
+        async function loadDeviceStatistics(deviceId, days) {
+            const resp = await fetch(`/devices/${deviceId}/statistics?days=${days}`);
+            if (!resp.ok) return;
+            const st = await resp.json();
+
+            const kpis = [
+                ["Total Runs", st.total_runs],
+                ["Completed / Aborted", `${st.completed_runs} / ${st.aborted_runs}`],
+                ["Total Runtime", formatDuration(st.total_duration_minutes)],
+                ["Avg Duration", `${st.avg_duration_minutes}m`],
+                ["Energy Logged", `${st.total_energy_kwh} kWh`],
+                ["Water Logged", `${st.total_water_litres} L`],
+            ];
+            document.getElementById("stats-kpis").innerHTML = kpis.map(([l, v]) =>
+                `<div class="info-box"><div class="info-label">${escapeHtml(l)}</div><div class="info-val">${escapeHtml(v)}</div></div>`
+            ).join("");
+
+            const estEntries = Object.entries(st.program_estimates || {});
+            document.getElementById("est-list").innerHTML = estEntries.length
+                ? "Saved: " + estEntries.map(([p, v]) => `${escapeHtml(p)} (${v.energy_kwh ?? 0} kWh, ${v.water_litres ?? 0} L)`).join(" · ")
+                : "No custom program estimates saved yet.";
+
+            document.getElementById("stats-runs-list").innerHTML = renderRunsTable(st.recent_runs, false, true);
+
+            try {
+                await ensureChartJs();
+                if (statsProgramChart) statsProgramChart.destroy();
+                if (statsHourChart) statsHourChart.destroy();
+
+                const progs = st.by_program || [];
+                statsProgramChart = new Chart(document.getElementById("stats-program-chart").getContext("2d"), {
+                    type: "doughnut",
+                    data: {
+                        labels: progs.length ? progs.map(p => p.program) : ["No data"],
+                        datasets: [{
+                            data: progs.length ? progs.map(p => p.count) : [1],
+                            backgroundColor: progs.length
+                                ? ["#cc002b", "#ff7b2e", "#2196f3", "#43a047", "#8e24aa", "#607d8b"]
+                                : ["#d0d5dd"],
+                        }],
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } },
+                });
+
+                statsHourChart = new Chart(document.getElementById("stats-hour-chart").getContext("2d"), {
+                    type: "bar",
+                    data: {
+                        labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                        datasets: [{ label: "Runs", data: st.by_hour || Array(24).fill(0), backgroundColor: "#cc002b" }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                    },
+                });
+            } catch (_) {}
+        }
+
+        async function deleteRun(deviceId, runId) {
+            const resp = await fetch(`/devices/${deviceId}/runs/${runId}`, { method: "DELETE" });
+            if (resp.ok && currentDevice) {
+                await loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
+            }
+        }
+
+        document.getElementById("stats-days").addEventListener("change", () => {
+            if (currentDevice) loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
+        });
+
+        document.getElementById("btn-save-estimate").addEventListener("click", async () => {
+            if (!currentDevice) return;
+            const program_name = document.getElementById("est-program").value.trim();
+            const kwhRaw = document.getElementById("est-kwh").value;
+            const lRaw = document.getElementById("est-litres").value;
+            if (!program_name) return;
+            const resp = await fetch(`/devices/${currentDevice.device_id}/program-estimates`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    program_name,
+                    energy_kwh: kwhRaw === "" ? null : Number(kwhRaw),
+                    water_litres: lRaw === "" ? null : Number(lRaw),
+                }),
+            });
+            if (resp.ok) {
+                showBanner("Program estimate saved");
+                await loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
+            }
+        });
+
+        async function loadGlobalStatistics(days) {
+            const resp = await fetch(`/statistics?days=${days}`);
+            if (!resp.ok) return;
+            const st = await resp.json();
+            const kpis = [
+                ["Total Runs", st.total_runs],
+                ["Total Runtime", formatDuration(st.total_duration_minutes)],
+                ["Avg Duration", `${st.avg_duration_minutes}m`],
+                ["Energy / Water", `${st.total_energy_kwh} kWh · ${st.total_water_litres} L`],
+            ];
+            document.getElementById("global-stats-kpis").innerHTML = kpis.map(([l, v]) =>
+                `<div class="info-box"><div class="info-label">${escapeHtml(l)}</div><div class="info-val">${escapeHtml(v)}</div></div>`
+            ).join("");
+            document.getElementById("global-stats-runs").innerHTML = renderRunsTable(st.recent_runs, true, false);
+        }
+
+        function closeGlobalStatsModal() {
+            document.getElementById("global-stats-modal").classList.remove("open");
+        }
+        document.getElementById("btn-global-stats").addEventListener("click", () => {
+            document.getElementById("global-stats-modal").classList.add("open");
+            loadGlobalStatistics(Number(document.getElementById("global-stats-days").value));
+        });
+        document.getElementById("global-stats-days").addEventListener("change", () => {
+            loadGlobalStatistics(Number(document.getElementById("global-stats-days").value));
+        });
+
+        // Close modals on backdrop click
+        document.querySelectorAll(".modal").forEach(m => {
+            m.addEventListener("click", (e) => {
+                if (e.target === m) m.classList.remove("open");
+            });
+        });
+
+        initTheme();
+        loadStatusAndDevices();
+        connectSSE();
+        setInterval(loadStatusAndDevices, 30000);
+    </script>
+</body>
+</html>
