@@ -584,21 +584,78 @@
             </p>
 
             <div class="tabs" id="add-tabs">
-                <button class="tab-btn active" data-addtab="commission">Pair New on LAN</button>
-                <button class="tab-btn" data-addtab="existing">Connect with Keys</button>
-                <button class="tab-btn" data-addtab="wifi">Wi-Fi Setup (SoftAP)</button>
+                <button class="tab-btn active" data-addtab="cloud">Keep Official App</button>
+                <button class="tab-btn" data-addtab="commission">100% Local Only</button>
+                <button class="tab-btn" data-addtab="existing">With Keys</button>
+                <button class="tab-btn" data-addtab="wifi">Wi-Fi Setup</button>
                 <button class="tab-btn" data-addtab="yaml">Import YAML</button>
             </div>
 
-            <!-- Method 1: Pair New on LAN -->
-            <div class="add-tab-pane" id="addtab-commission">
-                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
-                    For an appliance already on your Wi-Fi that has not been paired locally yet. Generates keys, pairs with the appliance, and adds it automatically.
+            <!-- Method 1: Keep Official Miele App (Cloud Keys) -->
+            <div class="add-tab-pane" id="addtab-cloud">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">
+                    <strong>Keep both working together:</strong> Fetches your household's existing <code>GroupID</code> and <code>GroupKey</code> via a one-time Miele login so both the official Miele app and Miele Local work at the same time.
                 </p>
                 <div class="form-grid">
                     <div class="form-group">
+                        <label>Miele Account Country</label>
+                        <select id="cloud-country">
+                            <option value="dk" selected>Denmark (dk)</option>
+                            <option value="de">Germany (de)</option>
+                            <option value="se">Sweden (se)</option>
+                            <option value="no">Norway (no)</option>
+                            <option value="gb">United Kingdom (gb)</option>
+                            <option value="nl">Netherlands (nl)</option>
+                            <option value="at">Austria (at)</option>
+                            <option value="ch">Switzerland (ch)</option>
+                            <option value="fr">France (fr)</option>
+                            <option value="us">United States (us)</option>
+                            <option value="au">Australia (au)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <button class="btn btn-secondary" id="btn-cloud-login" style="width:100%;">1. Open Miele Login</button>
+                    </div>
+                </div>
+                <div id="cloud-login-link-box" style="display:none; margin-bottom:12px; font-size:12.5px; color:var(--text-secondary); background:var(--bg-primary); border:1px solid var(--border-light); border-radius:10px; padding:10px 12px;">
+                    <div><strong>Step 2:</strong> Sign in on the Miele page (<a id="cloud-auth-link" href="#" target="_blank" rel="noopener noreferrer" style="color:var(--accent); font-weight:650;">re-open login link</a>).</div>
+                    <div style="margin-top:4px;"><strong>Important:</strong> When login succeeds (or if you are already signed in), the Miele page stays spinning on <em>"PLEASE WAIT..."</em> because desktop browsers cancel the <code>miele://oauth2-code/</code> app redirect without changing the address bar.<br>Open <strong>F12 → Console</strong> (or <strong>F12 → Network</strong> with <em>Preserve log</em> checked, then reload the spinning tab), copy the <code>miele://oauth2-code/?code=...</code> URL (or the whole error line), and paste it below:</div>
+                    <details open style="margin-top:8px;">
+                        <summary style="cursor:pointer; font-weight:650; color:var(--text-secondary);">Example: Where to copy the code in F12 → Console</summary>
+                        <img src="/static/oauth-console-help.png" alt="Example of miele://oauth2-code URL in browser DevTools Console" style="display:block; width:100%; margin-top:6px; border-radius:8px; border:1px solid var(--border-color);">
+                    </details>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Paste Redirect URL (<code>miele://oauth2-code/?code=...</code>)</label>
+                        <input id="cloud-redirect-url" type="text" placeholder="miele://oauth2-code/?code=...&state=...">
+                    </div>
+                    <div class="form-group">
                         <label>Appliance IP Address</label>
-                        <input id="comm-host" type="text" placeholder="192.168.1.50">
+                        <input id="cloud-host" type="text" placeholder="10.0.0.185">
+                    </div>
+                    <div class="form-group">
+                        <label>Endpoint ID (slug, e.g. vaskemaskine)</label>
+                        <input id="cloud-endpoint" type="text" placeholder="vaskemaskine">
+                    </div>
+                    <div class="form-group full">
+                        <label>Display Name (optional)</label>
+                        <input id="cloud-name" type="text" placeholder="Miele Vaskemaskine">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btn-cloud-exchange">2. Fetch Keys &amp; Connect</button>
+                <div id="cloud-feedback" class="feedback-box"></div>
+            </div>
+
+            <!-- Method 2: 100% Local Only (Commissioning) -->
+            <div class="add-tab-pane" id="addtab-commission" style="display:none;">
+                <div class="hint-box" style="margin-top:0; margin-bottom:12px;">
+                    <strong>Local-only mode:</strong> Generates brand-new keys directly on the appliance. The official Miele phone app will stop working for this appliance (and re-linking it in the official app later will overwrite these keys).
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Appliance IP Address</label>
+                        <input id="comm-host" type="text" placeholder="10.0.0.185">
                     </div>
                     <div class="form-group">
                         <label>Endpoint ID (slug, e.g. washer, oven)</label>
@@ -609,7 +666,7 @@
                         <input id="comm-name" type="text" placeholder="Miele Vaskemaskine">
                     </div>
                 </div>
-                <button class="btn btn-primary" id="btn-commission">Pair &amp; Add Appliance</button>
+                <button class="btn btn-primary" id="btn-commission">Pair 100% Local &amp; Add</button>
                 <div id="comm-feedback" class="feedback-box"></div>
             </div>
 
@@ -996,7 +1053,7 @@
         function formatShortError(msg) {
             if (!msg) return "";
             const s = String(msg);
-            if (s.includes("HTTP 404")) return "Asleep / 404";
+            if (s.includes("HTTP 404")) return "Sleep / Key 404";
             if (s.includes("timed out") || s.includes("Communication error")) return "Offline";
             if (s.includes("401") || s.includes("403")) return "Auth error";
             return "Comm error";
@@ -1162,6 +1219,7 @@
 
         let lastSuccessDevice = null;
         let lastProvisioningInfo = null;
+        let activeCloudState = null;
 
         function setFeedback(elId, type, title, bodyHtml = "") {
             const el = document.getElementById(elId);
@@ -1175,8 +1233,35 @@
             el.innerHTML = "";
         }
 
-        function openAddModal() {
-            ["comm-feedback", "pair-feedback", "wifi-feedback", "yaml-feedback"].forEach(clearFeedback);
+        function switchAddTab(tabName) {
+            document.querySelectorAll("#add-tabs .tab-btn").forEach(b => {
+                b.classList.toggle("active", b.dataset.addtab === tabName);
+            });
+            document.querySelectorAll(".add-tab-pane").forEach(p => {
+                p.style.display = p.id === "addtab-" + tabName ? "block" : "none";
+            });
+        }
+
+        function openAddModal(tabName = null, prefill = null) {
+            ["cloud-feedback", "comm-feedback", "pair-feedback", "wifi-feedback", "yaml-feedback"].forEach(clearFeedback);
+            if (tabName) switchAddTab(tabName);
+            if (prefill) {
+                if (prefill.host) {
+                    document.getElementById("cloud-host").value = prefill.host;
+                    document.getElementById("comm-host").value = prefill.host;
+                    document.getElementById("pair-host").value = prefill.host;
+                }
+                if (prefill.endpoint) {
+                    document.getElementById("cloud-endpoint").value = prefill.endpoint;
+                    document.getElementById("comm-endpoint").value = prefill.endpoint;
+                    document.getElementById("pair-endpoint").value = prefill.endpoint;
+                }
+                if (prefill.name) {
+                    document.getElementById("cloud-name").value = prefill.name;
+                    document.getElementById("comm-name").value = prefill.name;
+                    document.getElementById("pair-name").value = prefill.name;
+                }
+            }
             document.getElementById("add-modal").classList.add("open");
         }
         function closeAddModal() {
@@ -1226,15 +1311,97 @@
             document.getElementById("copy-keys-status").textContent = "Copied!";
         });
 
-        document.getElementById("btn-add-appliance").addEventListener("click", openAddModal);
+        document.getElementById("btn-add-appliance").addEventListener("click", () => openAddModal());
 
         document.querySelectorAll("#add-tabs .tab-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll("#add-tabs .tab-btn").forEach(b => b.classList.remove("active"));
-                document.querySelectorAll(".add-tab-pane").forEach(p => p.style.display = "none");
-                btn.classList.add("active");
-                document.getElementById("addtab-" + btn.dataset.addtab).style.display = "block";
-            });
+            btn.addEventListener("click", () => switchAddTab(btn.dataset.addtab));
+        });
+
+        document.getElementById("btn-cloud-login").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-cloud-login");
+            const country = document.getElementById("cloud-country").value || "dk";
+            btn.disabled = true;
+            btn.textContent = "Opening…";
+            clearFeedback("cloud-feedback");
+            try {
+                const resp = await fetch("/setup/cloud/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ country }),
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    setFeedback("cloud-feedback", "error", "Could not start Miele login", escapeHtml(data.detail || "Unknown error"));
+                    return;
+                }
+                activeCloudState = data.state;
+                const link = document.getElementById("cloud-auth-link");
+                link.href = data.authorize_url;
+                document.getElementById("cloud-login-link-box").style.display = "block";
+                window.open(data.authorize_url, "_blank", "noopener,noreferrer");
+            } catch (err) {
+                setFeedback("cloud-feedback", "error", "Network error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "1. Open Miele Login";
+            }
+        });
+
+        document.getElementById("btn-cloud-exchange").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-cloud-exchange");
+            const redirect_url = document.getElementById("cloud-redirect-url").value.trim();
+            const host = document.getElementById("cloud-host").value.trim() || null;
+            const endpoint_name = document.getElementById("cloud-endpoint").value.trim() || "washer";
+            const display_name = document.getElementById("cloud-name").value.trim() || null;
+
+            if (!redirect_url) {
+                setFeedback("cloud-feedback", "error", "Redirect URL required", "Click '1. Open Miele Login', sign in, and paste the miele://oauth2-code/?code=... URL first.");
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = "Fetching keys…";
+            setFeedback("cloud-feedback", "info", "Exchanging Miele login for household keys…", "Retrieving GroupID/GroupKey from Miele Cloud without affecting your phone app.");
+            try {
+                const resp = await fetch("/setup/cloud/exchange", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        redirect_url,
+                        state: activeCloudState,
+                        host,
+                        endpoint_name,
+                        display_name,
+                        save_on_success: Boolean(host),
+                    }),
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    setFeedback("cloud-feedback", "error", "Could not fetch Miele Cloud keys", escapeHtml(data.detail || "Check the pasted redirect URL and try again."));
+                    return;
+                }
+                if (data.device) {
+                    await loadStatusAndDevices();
+                    closeAddModal();
+                    openSuccessModal(
+                        data.device,
+                        data.provisioning_info || null,
+                        "Connected using your Miele Cloud household keys — both the official app and Miele Local work together."
+                    );
+                } else {
+                    const info = data.provisioning_info || {};
+                    if (info.GroupID) document.getElementById("pair-groupid").value = info.GroupID;
+                    if (info.GroupKey) document.getElementById("pair-groupkey").value = info.GroupKey;
+                    const msg = data.save_warning
+                        ? `${escapeHtml(data.save_warning)}<br><br>Keys fetched: <code>${escapeHtml(info.GroupID || "")}</code> (pre-filled in 'With Keys' tab).`
+                        : `Keys fetched (<code>${escapeHtml(info.GroupID || "")}</code>). Enter an appliance IP above or switch to the 'With Keys' tab to save.`;
+                    setFeedback("cloud-feedback", data.save_warning ? "error" : "success", "Cloud keys retrieved", msg);
+                }
+            } catch (err) {
+                setFeedback("cloud-feedback", "error", "Connection error", escapeHtml(err.message));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "2. Fetch Keys & Connect";
+            }
         });
 
         document.getElementById("pair-keysjson").addEventListener("input", (e) => {
@@ -1294,7 +1461,7 @@
                 setFeedback("comm-feedback", "error", "Connection error", escapeHtml(err.message));
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Pair & Add Appliance";
+                btn.textContent = "Pair 100% Local & Add";
             }
         });
 
@@ -1445,6 +1612,17 @@
             btn.addEventListener("click", () => switchDetailTab(btn.dataset.tab));
         });
 
+        function openRepairForCurrentDevice(tabName) {
+            if (!currentDevice) return;
+            const prefill = {
+                host: currentDevice.host || "",
+                endpoint: currentDevice.endpoint || "",
+                name: currentDevice.name || "",
+            };
+            closeDeviceModal();
+            openAddModal(tabName, prefill);
+        }
+
         function renderModalTelemetry() {
             if (!currentDevice) return;
             const st = currentDevice.state || {};
@@ -1452,9 +1630,9 @@
             const alertBanner = document.getElementById("modal-alert-banner");
             if (currentDevice.last_error) {
                 const is404 = String(currentDevice.last_error).includes("HTTP 404");
-                alertBanner.className = "feedback-box " + (is404 ? "info" : "error");
+                alertBanner.className = "feedback-box error";
                 alertBanner.innerHTML = is404
-                    ? `<strong>💤 Appliance is in deep sleep / standby</strong><div style='margin-top:3px;'>${escapeHtml(currentDevice.last_error)}<br>Miele appliances turn off their internal bus ~15 min after switching off; telemetry resumes automatically when turned back on.</div>`
+                    ? `<strong>⚠️ Key mismatch or appliance asleep (HTTP 404)</strong><div style='margin-top:4px;'>${escapeHtml(currentDevice.last_error)}</div><div style='display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;'><button class="btn btn-primary btn-sm" onclick="openRepairForCurrentDevice('cloud')">Fix: Keep Official App (Cloud Keys)</button><button class="btn btn-secondary btn-sm" onclick="openRepairForCurrentDevice('commission')">Fix: 100% Local Only</button></div>`
                     : `<strong>⚠️ Communication issue</strong><div style='margin-top:3px;'>${escapeHtml(currentDevice.last_error)}</div>`;
             } else if (st.SignalFailure) {
                 alertBanner.className = "feedback-box error";

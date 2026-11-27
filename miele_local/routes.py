@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .__version__ import __version__
+from .cloud import CONSUMER_CLIENT_IDS, complete_cloud_oauth, start_cloud_oauth
 from .crypto import (
     MieleDOP2UnavailableError,
     MieleLocalError,
@@ -123,6 +124,20 @@ class ProgramEstimateRequest(BaseModel):
     program_name: str = Field(min_length=1, max_length=100)
     energy_kwh: Optional[float] = Field(default=None, ge=0.0, le=100.0)
     water_litres: Optional[float] = Field(default=None, ge=0.0, le=1000.0)
+
+
+class CloudStartRequest(BaseModel):
+    country: str = Field(default="dk", min_length=2, max_length=5)
+
+
+class CloudExchangeRequest(BaseModel):
+    redirect_url: str = Field(min_length=4)
+    state: Optional[str] = None
+    host: Optional[str] = Field(default=None, max_length=255)
+    endpoint_name: str = Field(default="washer", min_length=1, max_length=64)
+    display_name: Optional[str] = Field(default=None, max_length=120)
+    route: str = Field(default="auto", max_length=32)
+    save_on_success: bool = True
 
 
 def _get_home_name(miele_api) -> str:
@@ -241,6 +256,71 @@ def register_routes(app: FastAPI, get_miele_api) -> None:
     async def setup_generate_keys(api_key: Optional[str] = Depends(get_api_key)):
         info = MieleProvisioningInfo.generate_random()
         return info.to_dict()
+
+    @app.get("/setup/cloud/countries", tags=["Setup"])
+    async def setup_cloud_countries(api_key: Optional[str] = Depends(get_api_key)):
+        return {"default": "dk", "countries": sorted(CONSUMER_CLIENT_IDS.keys())}
+
+    @app.post("/setup/cloud/start", tags=["Setup"])
+    async def setup_cloud_start(
+        req: CloudStartRequest, api_key: Optional[str] = Depends(get_api_key)
+    ):
+        import aiohttp
+
+        miele_api = get_miele_api()
+        session = await miele_api._get_session() if miele_api else aiohttp.ClientSession()
+        try:
+            return await start_cloud_oauth(session, req.country)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        finally:
+            if not miele_api:
+                await session.close()
+
+    @app.post("/setup/cloud/exchange", tags=["Setup"])
+    async def setup_cloud_exchange(
+        req: CloudExchangeRequest, api_key: Optional[str] = Depends(get_api_key)
+    ):
+        import aiohttp
+
+        miele_api = get_miele_api()
+        session = await miele_api._get_session() if miele_api else aiohttp.ClientSession()
+        try:
+            gk = await complete_cloud_oauth(
+                session,
+                redirect_url=req.redirect_url,
+                state=req.state,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        finally:
+            if not miele_api:
+                await session.close()
+
+        result: Dict[str, Any] = {
+            "success": True,
+            "provisioning_info": {"GroupID": gk.group_id, "GroupKey": gk.group_key},
+            "region": gk.region,
+            "cloud_devices": gk.devices,
+        }
+        if req.host and req.host.strip() and req.save_on_success and miele_api:
+            try:
+                device = await miele_api.add_or_update_appliance(
+                    endpoint_name=req.endpoint_name,
+                    display_name=req.display_name or req.endpoint_name.replace("_", " ").title(),
+                    host=req.host.strip(),
+                    group_id=gk.group_id,
+                    group_key=gk.group_key,
+                    device_route=req.route or "auto",
+                )
+                result["device"] = device
+            except Exception as exc:
+                result["save_warning"] = (
+                    f"Cloud keys retrieved, but connecting to {req.host.strip()} failed: {exc}"
+                )
+        return result
 
     @app.post("/setup/commission", tags=["Setup"])
     async def setup_commission(

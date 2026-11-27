@@ -180,3 +180,53 @@ def test_deep_sleep_404_transitions_cleanly_without_error(client_and_api):
     assert dev["state"]["DecodedStatus"] == "Off"
 
 
+def test_devices_404_reports_key_or_app_error_instead_of_fake_sleep(client_and_api):
+    client, _, did = client_and_api
+
+    async def fake_send(method, host, resource_path, **kwargs):
+        raise MieleLocalError(
+            f"Resource not found on Miele appliance: /{resource_path} (HTTP 404)",
+            host=host,
+            status_code=404,
+        )
+
+    with patch("miele_local.crypto.MieleCryptoProvider.send_http_request", side_effect=fake_send):
+        r = client.post(f"/devices/{did}/refresh")
+    assert r.status_code == 404
+    dev = client.get(f"/devices/{did}").json()
+    assert "HTTP 404" in dev["last_error"]
+    assert dev["state"].get("DeepSleep") is not True
+
+
+def test_cloud_oauth_start_and_exchange_routes(client_and_api):
+    from miele_local.cloud import CloudGroupKey
+
+    client, _, _ = client_and_api
+    r_countries = client.get("/setup/cloud/countries")
+    assert r_countries.status_code == 200
+    assert "dk" in r_countries.json()["countries"]
+
+    r_start = client.post("/setup/cloud/start", json={"country": "dk"})
+    assert r_start.status_code == 200
+    start_data = r_start.json()
+    assert "authorize_url" in start_data
+    assert start_data["country"] == "dk"
+
+    fake_gk = CloudGroupKey(
+        group_id="6BD71E44119ABF7F",
+        group_key="AB" * 64,
+        devices=[{"fabNumber": "000186657498"}],
+        region="EU",
+    )
+    with patch("miele_local.routes.complete_cloud_oauth", new=AsyncMock(return_value=fake_gk)):
+        r_ex = client.post(
+            "/setup/cloud/exchange",
+            json={"redirect_url": f"miele://oauth2-code/?code=testcode&state={start_data['state']}"},
+        )
+    assert r_ex.status_code == 200
+    body = r_ex.json()
+    assert body["success"] is True
+    assert body["provisioning_info"]["GroupID"] == "6BD71E44119ABF7F"
+    assert body["region"] == "EU"
+
+

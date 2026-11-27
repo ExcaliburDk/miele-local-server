@@ -250,17 +250,24 @@ class MieleLocalAPI:
         except MieleLocalError as exc:
             if exc.status_code != 404:
                 raise
-            # Check /Devices: an empty dict or 404 while the host answers HTTP indicates
-            # the Miele XKM module is in deep sleep rather than offline.
+            # Probe /Devices to distinguish genuine Deep Sleep (200 OK with empty {})
+            # from key mismatch / overwritten keys (HTTP 404 on /Devices too).
             try:
                 dev_bytes, _, _ = await provider.send_http_request(
                     "GET", app["host"], "Devices", session=session, timeout=3.0
                 )
                 dev_map = json.loads(dev_bytes.decode("utf-8")) if dev_bytes else {}
             except MieleLocalError as probe_exc:
-                if probe_exc.status_code != 404:
-                    raise exc from probe_exc
-                dev_map = {}
+                if probe_exc.status_code == 404:
+                    raise MieleLocalError(
+                        f"Appliance at {app['host']} returned HTTP 404 on /Devices. "
+                        "If the appliance is turned on, its GroupID/GroupKey may have been "
+                        "overwritten by the official Miele app — re-pair with 'Keep Official App' "
+                        "or '100% Local Only'.",
+                        host=app["host"],
+                        status_code=404,
+                    ) from probe_exc
+                raise exc from probe_exc
 
             if isinstance(dev_map, dict) and dev_map:
                 new_route = next(iter(dev_map.keys()))
@@ -276,7 +283,9 @@ class MieleLocalAPI:
                     raw_ident = json.loads(ident_bytes.decode("utf-8")) if ident_bytes else {}
                     return raw_state, raw_ident, new_route, False
 
-            if app.get("last_seen") or did in self.state_manager.current_state:
+            if isinstance(dev_map, dict) and not dev_map and (
+                app.get("last_seen") or did in self.state_manager.current_state
+            ):
                 return None, None, route, True
             raise
 
