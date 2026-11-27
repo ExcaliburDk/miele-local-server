@@ -886,24 +886,26 @@
                     </p>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Program Name (e.g. Cotton, DrainSpin)</label>
-                            <input id="est-program" type="text" list="est-program-suggestions" placeholder="Cotton">
-                            <datalist id="est-program-suggestions">
-                                <option value="Cotton">
-                                <option value="MinimumIron">
-                                <option value="Delicates">
-                                <option value="Woollens">
-                                <option value="DrainSpin">
-                                <option value="Express20">
-                                <option value="Eco4060">
-                                <option value="QuickPowerWash">
-                                <option value="DarkGarments">
-                                <option value="Outdoor">
-                                <option value="Shirts">
-                                <option value="Silks">
-                                <option value="Automatic">
-                                <option value="Eco">
-                            </datalist>
+                            <label>Program Name</label>
+                            <select id="est-program-select">
+                                <option value="">Select program…</option>
+                                <option value="Cotton">Cotton</option>
+                                <option value="MinimumIron">MinimumIron</option>
+                                <option value="Delicates">Delicates</option>
+                                <option value="Woollens">Woollens</option>
+                                <option value="DrainSpin">DrainSpin</option>
+                                <option value="Express20">Express20</option>
+                                <option value="Eco4060">Eco4060</option>
+                                <option value="QuickPowerWash">QuickPowerWash</option>
+                                <option value="DarkGarments">DarkGarments</option>
+                                <option value="Outdoor">Outdoor</option>
+                                <option value="Shirts">Shirts</option>
+                                <option value="Silks">Silks</option>
+                                <option value="Automatic">Automatic</option>
+                                <option value="Eco">Eco</option>
+                                <option value="__custom__">Other / Custom name…</option>
+                            </select>
+                            <input id="est-program" type="text" placeholder="Custom program name (e.g. Hygiene)" style="display:none; margin-top:6px;">
                         </div>
                         <div class="form-group">
                             <label>Energy (kWh) / Water (L)</label>
@@ -2099,15 +2101,33 @@
             if (currentDevice) loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
         });
 
+        document.getElementById("est-program-select").addEventListener("change", (e) => {
+            const customInput = document.getElementById("est-program");
+            if (e.target.value === "__custom__") {
+                customInput.style.display = "block";
+                customInput.focus();
+            } else {
+                customInput.style.display = "none";
+                customInput.value = "";
+            }
+        });
+
         document.getElementById("btn-save-estimate").addEventListener("click", async () => {
             if (!currentDevice) return;
-            const program_name = document.getElementById("est-program").value.trim();
+            const sel = document.getElementById("est-program-select").value;
+            const customVal = document.getElementById("est-program").value.trim();
+            const program_name = sel === "__custom__" ? customVal : sel;
             const kwhRaw = document.getElementById("est-kwh").value;
             const lRaw = document.getElementById("est-litres").value;
-            if (!program_name) return;
+            if (!program_name) {
+                showBanner("Please select or enter a program name", true);
+                return;
+            }
             const ok = await saveEstimateValue(currentDevice.device_id, program_name, kwhRaw, lRaw);
             if (ok) {
+                document.getElementById("est-program-select").value = "";
                 document.getElementById("est-program").value = "";
+                document.getElementById("est-program").style.display = "none";
                 document.getElementById("est-kwh").value = "";
                 document.getElementById("est-litres").value = "";
             }
