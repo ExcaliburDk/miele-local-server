@@ -160,6 +160,18 @@ def test_statistics_and_program_estimates_routes(client_and_api):
     assert r_del_est.json()["deleted"] is True
     assert "TopBottomHeat" not in r_del_est.json()["estimates"]
 
+    r_slash_est = client.put(
+        f"/devices/{did}/program-estimates",
+        json={"program_name": "Pumpe/Centrifugering", "energy_kwh": 0.1, "water_litres": 0.0},
+    )
+    assert r_slash_est.status_code == 200
+    r_del_slash = client.delete(
+        f"/devices/{did}/program-estimates",
+        params={"program_name": "Pumpe/Centrifugering"},
+    )
+    assert r_del_slash.status_code == 200
+    assert "Pumpe/Centrifugering" not in r_del_slash.json()["estimates"]
+
     r_global = client.get("/statistics?days=30")
     assert r_global.status_code == 200
     assert "total_runs" in r_global.json()

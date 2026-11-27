@@ -551,13 +551,7 @@ def register_routes(app: FastAPI, get_miele_api) -> None:
         )
         return {"saved": True, "estimates": miele_api.state_manager.get_program_estimates(app_rec["device_id"])}
 
-    @app.delete("/devices/{identifier}/program-estimates/{program_name}", tags=["Statistics"])
-    async def delete_program_estimate(
-        identifier: str,
-        program_name: str,
-        api_key: Optional[str] = Depends(get_api_key),
-    ):
-        """Delete a saved per-program energy/water estimate."""
+    def _delete_estimate_response(identifier: str, program_name: str) -> Dict[str, Any]:
         miele_api = get_miele_api()
         if not miele_api:
             raise HTTPException(status_code=503, detail="API not initialized")
@@ -568,6 +562,24 @@ def register_routes(app: FastAPI, get_miele_api) -> None:
         if not deleted:
             raise HTTPException(status_code=404, detail=f"Program estimate '{program_name}' not found")
         return {"deleted": True, "estimates": miele_api.state_manager.get_program_estimates(app_rec["device_id"])}
+
+    @app.delete("/devices/{identifier}/program-estimates", tags=["Statistics"])
+    async def delete_program_estimate_query(
+        identifier: str,
+        program_name: str,
+        api_key: Optional[str] = Depends(get_api_key),
+    ):
+        """Delete a saved per-program energy/water estimate (safe for names containing '/')."""
+        return _delete_estimate_response(identifier, program_name)
+
+    @app.delete("/devices/{identifier}/program-estimates/{program_name:path}", tags=["Statistics"])
+    async def delete_program_estimate(
+        identifier: str,
+        program_name: str,
+        api_key: Optional[str] = Depends(get_api_key),
+    ):
+        """Delete a saved per-program energy/water estimate."""
+        return _delete_estimate_response(identifier, program_name)
 
     @app.delete("/devices/{identifier}/runs/{run_id}", tags=["Statistics"])
     async def delete_device_run(

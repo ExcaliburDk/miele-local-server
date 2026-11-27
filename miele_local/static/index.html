@@ -2062,6 +2062,8 @@
                 await loadDeviceStatistics(deviceId, Number(document.getElementById("stats-days").value));
                 return true;
             }
+            const err = await resp.json().catch(() => ({}));
+            showBanner(err.detail || "Could not save program estimate", true);
             return false;
         }
 
@@ -2074,12 +2076,15 @@
 
         async function deleteEstimateRow(deviceId, btn) {
             const prog = btn.closest("tr").dataset.estProgram;
-            const resp = await fetch(`/devices/${deviceId}/program-estimates/${encodeURIComponent(prog)}`, {
+            const resp = await fetch(`/devices/${deviceId}/program-estimates?program_name=${encodeURIComponent(prog)}`, {
                 method: "DELETE",
             });
             if (resp.ok) {
                 showBanner(`Removed estimate for ${prog}`);
                 await loadDeviceStatistics(deviceId, Number(document.getElementById("stats-days").value));
+            } else {
+                const err = await resp.json().catch(() => ({}));
+                showBanner(err.detail || `Could not remove estimate for ${prog}`, true);
             }
         }
 
