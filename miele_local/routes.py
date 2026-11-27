@@ -551,6 +551,24 @@ def register_routes(app: FastAPI, get_miele_api) -> None:
         )
         return {"saved": True, "estimates": miele_api.state_manager.get_program_estimates(app_rec["device_id"])}
 
+    @app.delete("/devices/{identifier}/program-estimates/{program_name}", tags=["Statistics"])
+    async def delete_program_estimate(
+        identifier: str,
+        program_name: str,
+        api_key: Optional[str] = Depends(get_api_key),
+    ):
+        """Delete a saved per-program energy/water estimate."""
+        miele_api = get_miele_api()
+        if not miele_api:
+            raise HTTPException(status_code=503, detail="API not initialized")
+        app_rec = miele_api.state_manager.get_appliance(identifier)
+        if not app_rec:
+            raise HTTPException(status_code=404, detail=f"Appliance '{identifier}' not found")
+        deleted = miele_api.state_manager.delete_program_estimate(app_rec["device_id"], program_name)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Program estimate '{program_name}' not found")
+        return {"deleted": True, "estimates": miele_api.state_manager.get_program_estimates(app_rec["device_id"])}
+
     @app.delete("/devices/{identifier}/runs/{run_id}", tags=["Statistics"])
     async def delete_device_run(
         identifier: str, run_id: int, api_key: Optional[str] = Depends(get_api_key)

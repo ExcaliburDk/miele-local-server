@@ -153,6 +153,12 @@ def test_statistics_and_program_estimates_routes(client_and_api):
     r_dev_stats = client.get(f"/devices/{did}/statistics?days=30")
     assert r_dev_stats.status_code == 200
     assert r_dev_stats.json()["total_runs"] == 0
+    assert r_dev_stats.json()["program_estimates"]["TopBottomHeat"]["energy_kwh"] == 1.2
+
+    r_del_est = client.delete(f"/devices/{did}/program-estimates/TopBottomHeat")
+    assert r_del_est.status_code == 200
+    assert r_del_est.json()["deleted"] is True
+    assert "TopBottomHeat" not in r_del_est.json()["estimates"]
 
     r_global = client.get("/statistics?days=30")
     assert r_global.status_code == 200

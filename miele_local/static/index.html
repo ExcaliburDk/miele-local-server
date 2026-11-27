@@ -887,7 +887,23 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Program Name (e.g. Cotton, DrainSpin)</label>
-                            <input id="est-program" type="text" placeholder="Cotton">
+                            <input id="est-program" type="text" list="est-program-suggestions" placeholder="Cotton">
+                            <datalist id="est-program-suggestions">
+                                <option value="Cotton">
+                                <option value="MinimumIron">
+                                <option value="Delicates">
+                                <option value="Woollens">
+                                <option value="DrainSpin">
+                                <option value="Express20">
+                                <option value="Eco4060">
+                                <option value="QuickPowerWash">
+                                <option value="DarkGarments">
+                                <option value="Outdoor">
+                                <option value="Shirts">
+                                <option value="Silks">
+                                <option value="Automatic">
+                                <option value="Eco">
+                            </datalist>
                         </div>
                         <div class="form-group">
                             <label>Energy (kWh) / Water (L)</label>
@@ -898,7 +914,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="est-list" style="font-size:12px; color:var(--text-secondary);"></div>
+                    <div id="est-list" style="font-size:12px; color:var(--text-secondary); margin-top:6px;"></div>
                 </details>
                 <div style="font-size:12.5px; font-weight:650; color:var(--text-secondary); margin-bottom:6px;">Recent Runs</div>
                 <div id="stats-runs-list" style="max-height:220px; overflow:auto; border:1px solid var(--border-light); border-radius:12px;"></div>
@@ -1955,9 +1971,7 @@
             ).join("");
 
             const estEntries = Object.entries(st.program_estimates || {});
-            document.getElementById("est-list").innerHTML = estEntries.length
-                ? "Saved: " + estEntries.map(([p, v]) => `${escapeHtml(p)} (${v.energy_kwh ?? 0} kWh, ${v.water_litres ?? 0} L)`).join(" · ")
-                : "No custom program estimates saved yet.";
+            document.getElementById("est-list").innerHTML = renderEstimatesTable(deviceId, estEntries);
 
             document.getElementById("stats-runs-list").innerHTML = renderRunsTable(st.recent_runs, false, true);
 
@@ -1997,6 +2011,78 @@
             } catch (_) {}
         }
 
+        function renderEstimatesTable(deviceId, estEntries) {
+            if (!estEntries.length) {
+                return `<div style="padding:8px 0; color:var(--text-muted);">No custom program estimates saved yet.</div>`;
+            }
+            return `
+                <div style="border:1px solid var(--border-light); border-radius:10px; overflow:hidden; background:var(--bg-card);">
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                        <thead>
+                            <tr style="background:var(--bg-primary); text-align:left; border-bottom:1px solid var(--border-light);">
+                                <th style="padding:7px 10px;">Program</th>
+                                <th style="padding:7px 8px;">Energy (kWh)</th>
+                                <th style="padding:7px 8px;">Water (L)</th>
+                                <th style="padding:7px 10px; text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${estEntries.map(([prog, vals], idx) => `
+                                <tr style="border-bottom:1px solid var(--border-light);" data-est-program="${escapeHtml(prog)}">
+                                    <td style="padding:6px 10px; font-weight:600;">${escapeHtml(prog)}</td>
+                                    <td style="padding:6px 8px;">
+                                        <input id="est-row-kwh-${idx}" type="number" step="0.01" min="0" value="${vals.energy_kwh != null ? escapeHtml(vals.energy_kwh) : ""}" style="width:82px; min-height:30px; padding:3px 7px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-primary);">
+                                    </td>
+                                    <td style="padding:6px 8px;">
+                                        <input id="est-row-litres-${idx}" type="number" step="1" min="0" value="${vals.water_litres != null ? escapeHtml(vals.water_litres) : ""}" style="width:82px; min-height:30px; padding:3px 7px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-primary);">
+                                    </td>
+                                    <td style="padding:6px 10px; text-align:right; white-space:nowrap;">
+                                        <button class="btn btn-secondary btn-sm" style="min-height:28px; padding:3px 9px;" onclick="saveEstimateRow(${deviceId}, ${idx}, this)">Save</button>
+                                        <button class="btn btn-secondary btn-sm" style="min-height:28px; padding:3px 8px; margin-left:4px; color:var(--text-error);" onclick="deleteEstimateRow(${deviceId}, this)">✕</button>
+                                    </td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        async function saveEstimateValue(deviceId, programName, kwhRaw, litresRaw) {
+            const resp = await fetch(`/devices/${deviceId}/program-estimates`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    program_name: programName,
+                    energy_kwh: kwhRaw === "" ? null : Number(kwhRaw),
+                    water_litres: litresRaw === "" ? null : Number(litresRaw),
+                }),
+            });
+            if (resp.ok) {
+                showBanner(`Saved estimate for ${programName}`);
+                await loadDeviceStatistics(deviceId, Number(document.getElementById("stats-days").value));
+                return true;
+            }
+            return false;
+        }
+
+        async function saveEstimateRow(deviceId, idx, btn) {
+            const prog = btn.closest("tr").dataset.estProgram;
+            const kwh = document.getElementById(`est-row-kwh-${idx}`).value;
+            const litres = document.getElementById(`est-row-litres-${idx}`).value;
+            await saveEstimateValue(deviceId, prog, kwh, litres);
+        }
+
+        async function deleteEstimateRow(deviceId, btn) {
+            const prog = btn.closest("tr").dataset.estProgram;
+            const resp = await fetch(`/devices/${deviceId}/program-estimates/${encodeURIComponent(prog)}`, {
+                method: "DELETE",
+            });
+            if (resp.ok) {
+                showBanner(`Removed estimate for ${prog}`);
+                await loadDeviceStatistics(deviceId, Number(document.getElementById("stats-days").value));
+            }
+        }
+
         async function deleteRun(deviceId, runId) {
             const resp = await fetch(`/devices/${deviceId}/runs/${runId}`, { method: "DELETE" });
             if (resp.ok && currentDevice) {
@@ -2014,18 +2100,11 @@
             const kwhRaw = document.getElementById("est-kwh").value;
             const lRaw = document.getElementById("est-litres").value;
             if (!program_name) return;
-            const resp = await fetch(`/devices/${currentDevice.device_id}/program-estimates`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    program_name,
-                    energy_kwh: kwhRaw === "" ? null : Number(kwhRaw),
-                    water_litres: lRaw === "" ? null : Number(lRaw),
-                }),
-            });
-            if (resp.ok) {
-                showBanner("Program estimate saved");
-                await loadDeviceStatistics(currentDevice.device_id, Number(document.getElementById("stats-days").value));
+            const ok = await saveEstimateValue(currentDevice.device_id, program_name, kwhRaw, lRaw);
+            if (ok) {
+                document.getElementById("est-program").value = "";
+                document.getElementById("est-kwh").value = "";
+                document.getElementById("est-litres").value = "";
             }
         });
 

@@ -603,6 +603,18 @@ class ApplianceStateManager:
         finally:
             conn.close()
 
+    def delete_program_estimate(self, device_id: int, program_name: str) -> bool:
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "DELETE FROM program_estimates WHERE device_id = ? AND program_name = ?",
+                (device_id, program_name.strip()),
+            )
+            conn.commit()
+            return cur.rowcount > 0
+        finally:
+            conn.close()
+
     def delete_run(self, device_id: int, run_id: int) -> bool:
         conn = self._connect()
         try:
