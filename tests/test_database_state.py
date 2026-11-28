@@ -96,5 +96,11 @@ def test_state_manager_crud_and_history(tmp_path):
     assert stats["recent_runs"][0]["program"] == "Cotton"
     assert stats["recent_runs"][0]["consumption_source"] == "estimated"
 
+    # Aliased estimate saved retroactively (ECO 40-60 -> EuropeanUnionEcoMode) backfills earlier run
+    mgr.set_program_estimate(did, "ECO 40-60", energy_kwh=0.4, water_litres=35.9)
+    stats_after = mgr.get_statistics(did, days=30)
+    assert stats_after["total_energy_kwh"] == 1.35
+    assert stats_after["total_water_litres"] == 83.9
+
     assert mgr.delete_appliance(did) is True
     assert mgr.get_appliance(did) is None

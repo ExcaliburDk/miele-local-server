@@ -3,6 +3,7 @@
 import datetime
 import json
 import logging
+import re
 import sqlite3
 import time
 from typing import Any, Dict, List, Optional
@@ -20,6 +21,29 @@ from .enums import (
 )
 
 logger = logging.getLogger(__name__)
+
+PROGRAM_ESTIMATE_ALIASES: Dict[str, str] = {
+    "eco4060": "europeanunionecomode",
+    "eco40-60": "europeanunionecomode",
+    "express20": "expresstwentyminutes",
+    "darkgarments": "darkgarmentsdenim",
+    "woollens": "wool",
+}
+
+
+def _canonical_program_key(name: str) -> str:
+    """Normalize a program name for flexible matching (e.g. 'ECO 40-60' -> 'europeanunionecomode')."""
+    compact = re.sub(r"[^a-z0-9]+", "", (name or "").strip().lower())
+    return PROGRAM_ESTIMATE_ALIASES.get(compact, compact)
+
+
+def _program_names_match(run_program: str, estimate_program: str) -> bool:
+    """Return True if an appliance run program matches a saved estimate key."""
+    if not run_program or not estimate_program:
+        return False
+    if run_program.strip().lower() == estimate_program.strip().lower():
+        return True
+    return _canonical_program_key(run_program) == _canonical_program_key(estimate_program)
 
 
 def _tuple_to_minutes(value: Any) -> Optional[int]:
@@ -133,6 +157,7 @@ class ApplianceStateManager:
         self.last_state_fingerprint: Dict[int, str] = {}
         self.reload_appliances()
         self._load_latest_history()
+        self._backfill_missing_run_estimates()
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
@@ -473,13 +498,7 @@ class ApplianceStateManager:
                 consumption_source = open_run["consumption_source"]
 
                 if energy_kwh is None and water_litres is None and outcome == "completed":
-                    est = conn.execute(
-                        (
-                            "SELECT energy_kwh, water_litres FROM program_estimates "
-                            "WHERE device_id = ? AND program_name = ?"
-                        ),
-                        (device_id, prog_name),
-                    ).fetchone()
+                    est = self._find_matching_estimate(conn, device_id, prog_name)
                     if est:
                         energy_kwh = est["energy_kwh"]
                         water_litres = est["water_litres"]
@@ -562,6 +581,76 @@ class ApplianceStateManager:
         finally:
             conn.close()
 
+    @staticmethod
+    def _find_matching_estimate(
+        conn: sqlite3.Connection, device_id: int, prog_name: str
+    ) -> Optional[sqlite3.Row]:
+        rows = conn.execute(
+            "SELECT program_name, energy_kwh, water_litres FROM program_estimates WHERE device_id = ?",
+            (device_id,),
+        ).fetchall()
+        for row in rows:
+            if row["program_name"].strip().lower() == prog_name.strip().lower():
+                return row
+        for row in rows:
+            if _program_names_match(prog_name, row["program_name"]):
+                return row
+        return None
+
+    @staticmethod
+    def _backfill_runs_for_estimate(
+        conn: sqlite3.Connection,
+        device_id: int,
+        program_name: str,
+        energy_kwh: Optional[float],
+        water_litres: Optional[float],
+        overwrite_estimated: bool = False,
+    ) -> None:
+        source_clause = (
+            "(consumption_source IS NULL OR consumption_source = 'estimated')"
+            if overwrite_estimated
+            else "consumption_source IS NULL AND energy_kwh IS NULL AND water_litres IS NULL"
+        )
+        runs = conn.execute(
+            f"""
+            SELECT run_id, decoded_program_id FROM appliance_runs
+            WHERE device_id = ? AND outcome = 'completed' AND {source_clause}
+            """,
+            (device_id,),
+        ).fetchall()
+        for r in runs:
+            if _program_names_match(r["decoded_program_id"] or "", program_name):
+                conn.execute(
+                    """
+                    UPDATE appliance_runs
+                    SET energy_kwh = ?,
+                        water_litres = ?,
+                        consumption_source = 'estimated',
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE run_id = ?
+                    """,
+                    (energy_kwh, water_litres, r["run_id"]),
+                )
+
+    def _backfill_missing_run_estimates(self) -> None:
+        conn = self._connect()
+        try:
+            estimates = conn.execute(
+                "SELECT device_id, program_name, energy_kwh, water_litres FROM program_estimates"
+            ).fetchall()
+            for est in estimates:
+                self._backfill_runs_for_estimate(
+                    conn,
+                    est["device_id"],
+                    est["program_name"],
+                    est["energy_kwh"],
+                    est["water_litres"],
+                    overwrite_estimated=False,
+                )
+            conn.commit()
+        finally:
+            conn.close()
+
     def set_program_estimate(
         self,
         device_id: int,
@@ -569,6 +658,7 @@ class ApplianceStateManager:
         energy_kwh: Optional[float],
         water_litres: Optional[float],
     ) -> None:
+        clean_name = program_name.strip()
         conn = self._connect()
         try:
             conn.execute(
@@ -577,7 +667,10 @@ class ApplianceStateManager:
                 (device_id, program_name, energy_kwh, water_litres, updated_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                 """,
-                (device_id, program_name.strip(), energy_kwh, water_litres),
+                (device_id, clean_name, energy_kwh, water_litres),
+            )
+            self._backfill_runs_for_estimate(
+                conn, device_id, clean_name, energy_kwh, water_litres, overwrite_estimated=True
             )
             conn.commit()
         finally:

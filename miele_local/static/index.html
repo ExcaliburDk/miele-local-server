@@ -886,23 +886,23 @@
                     </p>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Program Name</label>
+                            <label>Program Name (matched to logged Miele ID)</label>
                             <select id="est-program-select">
                                 <option value="">Select program…</option>
                                 <option value="Cotton">Cotton</option>
-                                <option value="MinimumIron">MinimumIron</option>
+                                <option value="EuropeanUnionEcoMode">ECO 40-60 (EuropeanUnionEcoMode)</option>
+                                <option value="ExpressTwentyMinutes">Express 20 (ExpressTwentyMinutes)</option>
+                                <option value="DrainSpin">Drain / Spin (DrainSpin)</option>
+                                <option value="MinimumIron">Minimum Iron (MinimumIron)</option>
                                 <option value="Delicates">Delicates</option>
-                                <option value="Woollens">Woollens</option>
-                                <option value="DrainSpin">DrainSpin</option>
-                                <option value="Express20">Express20</option>
-                                <option value="Eco4060">Eco4060</option>
-                                <option value="QuickPowerWash">QuickPowerWash</option>
-                                <option value="DarkGarments">DarkGarments</option>
-                                <option value="Outdoor">Outdoor</option>
+                                <option value="Wool">Wool</option>
+                                <option value="DarkGarmentsDenim">Dark Garments / Denim (DarkGarmentsDenim)</option>
                                 <option value="Shirts">Shirts</option>
-                                <option value="Silks">Silks</option>
-                                <option value="Automatic">Automatic</option>
-                                <option value="Eco">Eco</option>
+                                <option value="Outdoor">Outdoor</option>
+                                <option value="CottonHygiene">Cotton Hygiene (CottonHygiene)</option>
+                                <option value="HandWash">Hand Wash (HandWash)</option>
+                                <option value="SyntheticBedding">Synthetic Bedding (SyntheticBedding)</option>
+                                <option value="Maintenance">Maintenance</option>
                                 <option value="__custom__">Other / Custom name…</option>
                             </select>
                             <input id="est-program" type="text" placeholder="Custom program name (e.g. Hygiene)" style="display:none; margin-top:6px;">
@@ -1973,6 +1973,7 @@
             ).join("");
 
             const estEntries = Object.entries(st.program_estimates || {});
+            populateEstimateProgramOptions(st);
             document.getElementById("est-list").innerHTML = renderEstimatesTable(deviceId, estEntries);
 
             document.getElementById("stats-runs-list").innerHTML = renderRunsTable(st.recent_runs, false, true);
@@ -2011,6 +2012,61 @@
                     },
                 });
             } catch (_) {}
+        }
+
+        const KNOWN_PROGRAM_ESTIMATE_OPTIONS = [
+            ["Cotton", "Cotton"],
+            ["EuropeanUnionEcoMode", "ECO 40-60 (EuropeanUnionEcoMode)"],
+            ["ExpressTwentyMinutes", "Express 20 (ExpressTwentyMinutes)"],
+            ["DrainSpin", "Drain / Spin (DrainSpin)"],
+            ["MinimumIron", "Minimum Iron (MinimumIron)"],
+            ["Delicates", "Delicates"],
+            ["Wool", "Wool"],
+            ["DarkGarmentsDenim", "Dark Garments / Denim (DarkGarmentsDenim)"],
+            ["Shirts", "Shirts"],
+            ["Outdoor", "Outdoor"],
+            ["CottonHygiene", "Cotton Hygiene (CottonHygiene)"],
+            ["HandWash", "Hand Wash (HandWash)"],
+            ["SyntheticBedding", "Synthetic Bedding (SyntheticBedding)"],
+            ["Maintenance", "Maintenance"],
+            ["QuickPowerWash", "Dishwasher: QuickPowerWash"],
+            ["Intensive75", "Dishwasher: Intensive 75°C (Intensive75)"],
+            ["Automatic", "Automatic"],
+            ["Eco", "Dishwasher: Eco"],
+        ];
+
+        function populateEstimateProgramOptions(st) {
+            const sel = document.getElementById("est-program-select");
+            const prev = sel.value;
+            const seen = new Set();
+            const loggedProgs = [];
+            (st.by_program || []).forEach(p => {
+                if (p.program && !seen.has(p.program)) { seen.add(p.program); loggedProgs.push(p.program); }
+            });
+            (st.recent_runs || []).forEach(r => {
+                if (r.program && !seen.has(r.program)) { seen.add(r.program); loggedProgs.push(r.program); }
+            });
+
+            const parts = ['<option value="">Select program…</option>'];
+            if (loggedProgs.length) {
+                parts.push('<optgroup label="Seen on this appliance">');
+                loggedProgs.forEach(p => {
+                    parts.push(`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`);
+                });
+                parts.push('</optgroup>');
+            }
+            parts.push('<optgroup label="Miele Programs">');
+            KNOWN_PROGRAM_ESTIMATE_OPTIONS.forEach(([val, label]) => {
+                if (!seen.has(val)) {
+                    parts.push(`<option value="${escapeHtml(val)}">${escapeHtml(label)}</option>`);
+                }
+            });
+            parts.push('</optgroup>');
+            parts.push('<option value="__custom__">Other / Custom name…</option>');
+            sel.innerHTML = parts.join("");
+            if (prev && Array.from(sel.options).some(o => o.value === prev)) {
+                sel.value = prev;
+            }
         }
 
         function renderEstimatesTable(deviceId, estEntries) {
